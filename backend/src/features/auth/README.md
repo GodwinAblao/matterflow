@@ -1,3 +1,3 @@
-# auth
+# Demo sessions
 
-Planned feature. Implementation follows the boundaries in docs/architecture.md.
+Server-validated bearer sessions, role selection, expiry, and isolated workspace lifecycle. See docs/demo.md.

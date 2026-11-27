@@ -1,3 +1,3 @@
-# matters
+# Matters
 
-Planned feature. Implementation follows the boundaries in docs/architecture.md.
+Read-only register and detail endpoints, scoped to the authenticated workspace and role. Workflow mutations are a later milestone.

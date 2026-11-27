@@ -9,6 +9,17 @@
     "dev": "npm run dev --workspace frontend",
     "build": "npm run build --workspace frontend",
     "lint": "npm run lint --workspace frontend",
-    "dev:api": "cargo run -p matterflow-api"
+    "dev:api": "cargo run -p matterflow-api",
+    "db:check": "cargo run -p matterflow-api --bin matterflow-db -- check",
+    "db:migrate": "cargo run -p matterflow-api --bin matterflow-db -- migrate",
+    "db:test": "cargo test -p matterflow-api --test database -- --ignored",
+    "db:seed": "cargo run -p matterflow-api --bin matterflow-db -- seed",
+    "db:cleanup": "cargo run -p matterflow-api --bin matterflow-db -- cleanup",
+    "test:demo": "cargo test -p matterflow-api --test demo -- --ignored",
+    "format": "prettier --write frontend/src frontend/vite.config.ts docs README.md package.json",
+    "format:check": "prettier --check frontend/src frontend/vite.config.ts docs README.md package.json"
+  },
+  "devDependencies": {
+    "prettier": "3.10.1"
   }
 }

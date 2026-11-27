@@ -12,3 +12,5 @@ pub fn create_pool(database_url: Option<&str>) -> Result<Option<PgPool>, sqlx::E
         })
         .transpose()
 }
+
+pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./migrations");

@@ -40,3 +40,35 @@ async fn unknown_routes_return_json_errors() {
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
     assert_eq!(response.headers()["content-type"], "application/json");
 }
+
+#[tokio::test]
+async fn browser_preflight_allows_demo_requests_from_the_configured_frontend() {
+    let app = create_router(AppState { pool: None }, "http://localhost:5173").unwrap();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("OPTIONS")
+                .uri("/api/v1/demo/session")
+                .header("origin", "http://localhost:5173")
+                .header("access-control-request-method", "PATCH")
+                .header(
+                    "access-control-request-headers",
+                    "content-type,authorization",
+                )
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers()["access-control-allow-origin"],
+        "http://localhost:5173"
+    );
+    assert!(
+        response.headers()["access-control-allow-methods"]
+            .to_str()
+            .unwrap()
+            .contains("PATCH")
+    );
+}

@@ -1,3 +1,3 @@
-# auth
+# Demo entry
 
-Planned feature UI. Add components and API calls when its backend workflow exists.
+Entry form, session restoration, role switching, and end-demo handling. Bearer tokens stay in sessionStorage for this tab and are never stored in URLs.

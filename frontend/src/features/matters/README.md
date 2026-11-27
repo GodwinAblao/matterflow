@@ -1,3 +1,3 @@
-# matters
+# Matter workspace
 
-Planned feature UI. Add components and API calls when its backend workflow exists.
+Scoped matter register, search, document checklist details, follow-ups, and reviewer team overview.
