@@ -23,7 +23,7 @@ Status changes and their activity records should be committed in the same databa
 - activity: history written with workflow changes
 - auth: role enforcement and isolated demo sessions
 
-Health, session lifecycle, and matter register/detail reads are implemented. Other feature folders contain scope notes for later work. The auth service owns transactional demo creation; handlers manage HTTP input and output.
+Health, session lifecycle, matter register/detail reads, document receipt/review transitions, and readiness confirmation are implemented. Other feature folders contain scope notes for later work. The auth service owns transactional demo creation; handlers manage HTTP input and output.
 
 ## Analytics definitions to implement
 
@@ -37,6 +37,5 @@ Use Asia/Manila for displayed administrative dates and UTC instants for event ti
 
 ## Next milestones
 
-1. Add document receipt/review mutations and server-validated readiness transitions, with transactional history.
-2. Add follow-up actions and descriptive analytics with drill-downs.
-3. Deploy, verify the hosted demo, and prepare the reviewer walkthrough and portfolio documentation.
+1. Add follow-up actions and descriptive analytics with drill-downs.
+2. Deploy, verify the hosted demo, and prepare the reviewer walkthrough and portfolio documentation.

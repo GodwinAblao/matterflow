@@ -49,4 +49,4 @@ Protected routes require Authorization: Bearer TOKEN. Invalid/expired sessions r
 
 Run npm.cmd run test:demo explicitly against the seeded development database. It creates two temporary demo workspaces and deletes them on success; failed test workspaces expire normally. It checks isolation, staff assignment filtering, reviewer permissions, role switching, session expiry, revocation, cloning, and seed repeatability. Ordinary cargo test stays offline from Neon.
 
-Document receipt/review mutations, readiness transitions, activity write protection, and the full analytics dashboard remain later milestones. The current demo supports viewing the workflow data and demonstrating access boundaries.
+Document receipt/review mutations, readiness transitions, and transactional activity recording are implemented; see workflow.md. Follow-up actions, database-level activity write protection, and the full analytics dashboard remain later milestones.

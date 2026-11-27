@@ -9,6 +9,7 @@ pub struct ApiError {
     pub status: StatusCode,
     pub code: &'static str,
     pub message: &'static str,
+    pub details: Option<serde_json::Value>,
 }
 
 #[derive(Serialize)]
@@ -20,6 +21,8 @@ struct ErrorBody {
 struct ErrorDetail {
     code: &'static str,
     message: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    details: Option<serde_json::Value>,
 }
 
 impl IntoResponse for ApiError {
@@ -30,6 +33,7 @@ impl IntoResponse for ApiError {
                 error: ErrorDetail {
                     code: self.code,
                     message: self.message,
+                    details: self.details,
                 },
             }),
         )
@@ -43,13 +47,15 @@ impl ApiError {
             status: StatusCode::UNAUTHORIZED,
             code: "session_expired",
             message: "Your demo session is missing or expired. Start a new demo to continue.",
+            details: None,
         }
     }
     pub fn forbidden() -> Self {
         Self {
             status: StatusCode::FORBIDDEN,
             code: "forbidden",
-            message: "This action is available to the reviewer role.",
+            message: "Your current role cannot perform this action.",
+            details: None,
         }
     }
     pub fn unavailable() -> Self {
@@ -57,6 +63,7 @@ impl ApiError {
             status: StatusCode::SERVICE_UNAVAILABLE,
             code: "demo_unavailable",
             message: "The demo is temporarily unavailable. Please try again shortly.",
+            details: None,
         }
     }
     pub fn capacity() -> Self {
@@ -64,6 +71,7 @@ impl ApiError {
             status: StatusCode::TOO_MANY_REQUESTS,
             code: "demo_capacity",
             message: "All demo spaces are in use. Please try again later.",
+            details: None,
         }
     }
     pub fn internal() -> Self {
@@ -71,6 +79,7 @@ impl ApiError {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             code: "internal_error",
             message: "The request could not be completed.",
+            details: None,
         }
     }
     pub fn not_found() -> Self {
@@ -78,10 +87,30 @@ impl ApiError {
             status: StatusCode::NOT_FOUND,
             code: "not_found",
             message: "The requested record was not found.",
+            details: None,
         }
     }
     pub fn database(error: sqlx::Error) -> Self {
         tracing::error!(code = ?error.as_database_error().and_then(|error| error.code()), "Database operation failed");
         Self::unavailable()
+    }
+}
+
+impl ApiError {
+    pub fn conflict(code: &'static str, message: &'static str) -> Self {
+        Self {
+            status: StatusCode::CONFLICT,
+            code,
+            message,
+            details: None,
+        }
+    }
+    pub fn validation(message: &'static str) -> Self {
+        Self {
+            status: StatusCode::BAD_REQUEST,
+            code: "invalid_input",
+            message,
+            details: None,
+        }
     }
 }

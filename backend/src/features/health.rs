@@ -19,6 +19,7 @@ pub async fn readiness(State(state): State<AppState>) -> Result<Json<HealthRespo
         status: StatusCode::SERVICE_UNAVAILABLE,
         code: "database_not_configured",
         message: "The database has not been configured.",
+        details: None,
     })?;
     sqlx::query("SELECT 1").execute(pool).await.map_err(|_| {
         tracing::warn!("Database readiness check failed");
@@ -26,6 +27,7 @@ pub async fn readiness(State(state): State<AppState>) -> Result<Json<HealthRespo
             status: StatusCode::SERVICE_UNAVAILABLE,
             code: "database_unavailable",
             message: "The database is temporarily unavailable.",
+            details: None,
         }
     })?;
     Ok(response("ready"))

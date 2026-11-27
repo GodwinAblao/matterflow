@@ -1,3 +1,3 @@
-# documents
+# Document workflow
 
-Planned feature UI. Add components and API calls when its backend workflow exists.
+MatterDetails renders role-specific receipt/review actions, correction forms, readiness blockers, follow-ups, and activity history. Successful changes refresh both details and the register; conflicts refresh the latest state before retry.

@@ -34,9 +34,9 @@ A document cannot be accepted without receipt/review times and a reviewer. A cor
 
 ## Responsibilities still to implement
 
-The Rust session extractor validates the token, current database role, workspace, and expiry on each protected request. Matter reads are scoped by workspace; staff is additionally restricted to assigned matters. Reviewer-only team access is enforced in the handler. Database integrity constraints supplement these application checks; they do not replace them. Workflow transition rules remain to be implemented.
+The Rust session extractor validates the token, current database role, workspace, and expiry on each protected request. Matter reads are scoped by workspace; staff is additionally restricted to assigned matters. Reviewer-only team access is enforced in the handler. Database integrity constraints supplement these application checks; they do not replace them. Workflow transition rules are implemented in the Rust document/matter services.
 
-The readiness service must lock the matter while validating current checklist items and changing stage, and checklist mutations must follow the same locking convention. The database cannot determine checklist completeness with a row-level CHECK. Stage changes and activity inserts must use one transaction. Do not expose mutation routes until these rules exist.
+The readiness service locks the matter while validating current checklist items and changing stage; checklist mutations follow the same locking convention. The database cannot determine checklist completeness with a row-level CHECK. Stage changes and activity inserts use one transaction.
 
 Activity is not yet append-only at the database permission level. Introduce a restricted runtime database role before treating the activity log as protected against direct database edits. No public database credentials are used in the frontend.
 
@@ -50,4 +50,4 @@ Migrations create schema only. The explicit seed command creates a fictional tem
 
 ## Demo lifecycle implemented
 
-The second migration adds a unique template key and one session per workspace. The seed and session clone lifecycle are now implemented; see demo.md. API requests are scoped to a validated workspace, and staff/reviewer read permissions are enforced. Document workflow mutations remain unimplemented.
+The second migration adds a unique template key and one session per workspace. The seed and session clone lifecycle are now implemented; see demo.md. API requests are scoped to a validated workspace, and staff/reviewer read permissions are enforced. The third migration adds optimistic version counters. Document workflow mutations are now implemented; see workflow.md.

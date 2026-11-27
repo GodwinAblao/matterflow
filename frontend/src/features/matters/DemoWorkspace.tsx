@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiGet } from "../../lib/api";
 import type { DemoSession } from "../auth/useDemoSession";
+import { MatterDetails } from "../documents/MatterDetails";
 
 type Matter = {
   id: string;
@@ -12,24 +13,6 @@ type Matter = {
   assigned_to: string | null;
   required_documents: number;
   accepted_documents: number;
-};
-type Requirement = {
-  id: string;
-  title: string;
-  is_required: boolean;
-  status: string;
-  correction_note: string | null;
-};
-type FollowUp = {
-  id: string;
-  title: string;
-  due_on: string;
-  completed_at: string | null;
-};
-type Detail = {
-  matter: Matter;
-  documents: Requirement[];
-  follow_ups: FollowUp[];
 };
 type TeamMember = {
   display_name: string;
@@ -47,6 +30,7 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [search, setSearch] = useState("");
+  const onChanged = useCallback(() => setAttempt((value) => value + 1), []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -102,6 +86,11 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
 
   return (
     <div className="workspace">
+      {error && (
+        <div role="alert" className="notice error">
+          {error} <button onClick={onChanged}>Retry register refresh</button>
+        </div>
+      )}
       <div className="section-heading">
         <div>
           <p className="eyebrow">YOUR WORKSPACE</p>
@@ -219,6 +208,8 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
               id={selected}
               token={token}
               onExpired={onExpired}
+              role={session.role}
+              onChanged={onChanged}
             />
           ) : (
             <div className="empty detail-empty">
@@ -273,97 +264,5 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
         </section>
       )}
     </div>
-  );
-}
-
-function MatterDetails({
-  id,
-  token,
-  onExpired,
-}: {
-  id: string;
-  token: string;
-  onExpired: () => void;
-}) {
-  const [detail, setDetail] = useState<Detail | null>(null);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    void apiGet<Detail>("/matters/" + id, controller.signal, token)
-      .then((data) => {
-        setDetail(data);
-        setError("");
-      })
-      .catch((failure: unknown) => {
-        if (controller.signal.aborted) return;
-        if (failure instanceof ApiError && failure.status === 401) onExpired();
-        else
-          setError(
-            failure instanceof Error
-              ? failure.message
-              : "Could not load this matter.",
-          );
-      });
-    return () => controller.abort();
-  }, [id, token, onExpired, attempt]);
-  if (error)
-    return (
-      <div className="notice error" role="alert">
-        {error}{" "}
-        <button onClick={() => setAttempt((value) => value + 1)}>Retry</button>
-      </div>
-    );
-  if (!detail)
-    return (
-      <p role="status" className="loading">
-        Loading matter details...
-      </p>
-    );
-  return (
-    <>
-      <div className="detail-heading">
-        <p className="eyebrow">{detail.matter.reference}</p>
-        <h2>{detail.matter.title}</h2>
-        <p className="muted small">
-          Assigned to {detail.matter.assigned_to ?? "Unassigned"}
-        </p>
-      </div>
-      <h3>Document checklist</h3>
-      <ul className="checklist">
-        {detail.documents.map((document) => (
-          <li key={document.id}>
-            <div className="checklist-title">
-              <strong>{document.title}</strong>
-              <small className="muted">
-                {document.is_required ? "Required" : "Optional"}
-              </small>
-            </div>
-            <span className={"stage " + document.status}>
-              {label(document.status)}
-            </span>
-            {document.correction_note && (
-              <p className="correction-note">{document.correction_note}</p>
-            )}
-          </li>
-        ))}
-      </ul>
-      <h3>Follow-ups</h3>
-      <ul className="follow-ups">
-        {detail.follow_ups.map((followUp) => (
-          <li key={followUp.id}>
-            <strong>{followUp.title}</strong>
-            <p className="muted small">
-              Due{" "}
-              {new Intl.DateTimeFormat("en-PH", {
-                dateStyle: "medium",
-                timeZone: "Asia/Manila",
-              }).format(new Date(followUp.due_on + "T00:00:00+08:00"))}{" "}
-              - {followUp.completed_at ? "Completed" : "Outstanding"}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </>
   );
 }

@@ -1,3 +1,3 @@
 # Matters
 
-Read-only register and detail endpoints, scoped to the authenticated workspace and role. Workflow mutations are a later milestone.
+mod.rs provides the scoped register, consistent detail snapshots, and readiness endpoint. workflow.rs coordinates mutation authorization, matter locking, readiness blockers, and activity writes. See docs/workflow.md.

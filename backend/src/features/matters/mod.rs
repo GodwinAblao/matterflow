@@ -1,3 +1,4 @@
+pub mod workflow;
 use axum::{
     Json,
     extract::{Path, State},
@@ -21,12 +22,13 @@ pub struct MatterSummary {
     pub client_label: String,
     pub service_category: String,
     pub status: String,
+    pub version: i32,
     pub assigned_to: Option<String>,
     pub required_documents: i64,
     pub accepted_documents: i64,
 }
 
-const SUMMARY: &str = "SELECT m.id, m.reference, m.title, m.client_label, m.service_category, m.status,
+const SUMMARY: &str = "SELECT m.id, m.reference, m.title, m.client_label, m.service_category, m.status, m.version,
     u.display_name AS assigned_to,
     (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required) AS required_documents,
     (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required AND d.status = 'accepted') AS accepted_documents
@@ -55,6 +57,9 @@ pub struct Requirement {
     pub is_required: bool,
     pub status: String,
     pub correction_note: Option<String>,
+    pub version: i32,
+    pub received_at: Option<DateTime<Utc>>,
+    pub reviewed_at: Option<DateTime<Utc>>,
 }
 
 #[derive(FromRow, Serialize)]
@@ -70,6 +75,8 @@ pub struct MatterDetail {
     pub matter: MatterSummary,
     pub documents: Vec<Requirement>,
     pub follow_ups: Vec<FollowUp>,
+    pub readiness: workflow::Readiness,
+    pub activity: Vec<workflow::Activity>,
 }
 
 pub async fn detail(
@@ -78,23 +85,45 @@ pub async fn detail(
     Path(id): Path<Uuid>,
 ) -> Result<Json<MatterDetail>, ApiError> {
     let pool = pool(&state)?;
+    let mut tx = pool.begin().await.map_err(ApiError::database)?;
+    sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        .execute(&mut *tx)
+        .await
+        .map_err(ApiError::database)?;
     let query = format!("{SUMMARY} AND m.id = $4");
     let matter = sqlx::query_as::<_, MatterSummary>(&query)
         .bind(session.workspace_id)
         .bind(&session.role)
         .bind(session.user_id)
         .bind(id)
-        .fetch_optional(pool)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(ApiError::database)?
         .ok_or_else(ApiError::not_found)?;
-    let documents = sqlx::query_as::<_, Requirement>("SELECT id, title, is_required, status, correction_note FROM matterflow.document_requirements WHERE workspace_id = $1 AND matter_id = $2 ORDER BY title")
-        .bind(session.workspace_id).bind(id).fetch_all(pool).await.map_err(ApiError::database)?;
+    let documents = sqlx::query_as::<_, Requirement>("SELECT id, title, is_required, status, correction_note, version, received_at, reviewed_at FROM matterflow.document_requirements WHERE workspace_id = $1 AND matter_id = $2 ORDER BY title")
+        .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
     let follow_ups = sqlx::query_as::<_, FollowUp>("SELECT id, title, due_on, completed_at FROM matterflow.follow_ups WHERE workspace_id = $1 AND matter_id = $2 ORDER BY due_on, id")
-        .bind(session.workspace_id).bind(id).fetch_all(pool).await.map_err(ApiError::database)?;
+        .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
+    let readiness = workflow::readiness(&mut tx, session.workspace_id, id).await?;
+    let activity=sqlx::query_as::<_, workflow::Activity>("SELECT e.id,e.event_type,u.display_name AS actor_name,e.details,e.occurred_at FROM matterflow.activity_events e LEFT JOIN matterflow.app_users u ON (u.workspace_id,u.id)=(e.workspace_id,e.actor_id) WHERE e.workspace_id=$1 AND e.matter_id=$2 ORDER BY e.occurred_at DESC,e.id DESC LIMIT 100")
+        .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
+    tx.commit().await.map_err(ApiError::database)?;
     Ok(Json(MatterDetail {
         matter,
         documents,
         follow_ups,
+        readiness,
+        activity,
     }))
+}
+
+pub async fn mark_ready(
+    session: Session,
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Json(input): Json<crate::features::documents::VersionInput>,
+) -> Result<Json<workflow::ChangeResult>, ApiError> {
+    Ok(Json(
+        workflow::mark_ready(pool(&state)?, &session, id, input.expected_version).await?,
+    ))
 }

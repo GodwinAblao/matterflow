@@ -12,7 +12,7 @@ Independent project inspired by publicly described legal-office workflows. It is
 - Searchable matter register, required-document progress, checklist details, and follow-ups.
 - Versioned PostgreSQL migrations, repeatable synthetic seed, hashed session tokens, expiry, and cleanup.
 
-Document receipt/review actions, readiness transitions, and the full analytics dashboard are the next milestones.
+Staff receipt/resubmission, reviewer acceptance/correction requests, readiness blockers, and transactional activity history are implemented. Follow-up actions and the full analytics dashboard are the next milestones.
 
 ## Requirements
 
@@ -89,6 +89,7 @@ Live database checks are opt-in:
 npm.cmd run db:check
 npm.cmd run db:test
 npm.cmd run test:demo
+npm.cmd run test:workflow
 ```
 
 The schema test rolls back all fixtures. Demo API tests create isolated workspaces and remove them on success. A failed test workspace expires normally. Ordinary cargo test does not contact Neon.
@@ -102,3 +103,5 @@ Apply migrations and seed explicitly before deploying the API. The API never mig
 - docs/architecture.md: module boundaries and next milestones
 - docs/database.md: schema, integrity constraints and workflow responsibilities
 - docs/demo.md: dataset, session lifecycle, API routes and permission tests
+
+- docs/workflow.md: document correction cycle, readiness rules, concurrency and API examples

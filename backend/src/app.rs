@@ -7,7 +7,7 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use crate::{
     error::ApiError,
-    features::{auth::handler as auth, health, matters},
+    features::{auth::handler as auth, documents, health, matters},
     state::AppState,
 };
 
@@ -37,6 +37,15 @@ pub fn create_router(
         .route("/api/v1/team", get(auth::team))
         .route("/api/v1/matters", get(matters::list))
         .route("/api/v1/matters/{id}", get(matters::detail))
+        .route("/api/v1/matters/{id}/ready", post(matters::mark_ready))
+        .route(
+            "/api/v1/matters/{matter_id}/documents/{id}/receive",
+            post(documents::receive),
+        )
+        .route(
+            "/api/v1/matters/{matter_id}/documents/{id}/review",
+            post(documents::review),
+        )
         .fallback(not_found)
         .layer(axum::extract::DefaultBodyLimit::max(4096))
         .layer(cors)
@@ -53,5 +62,6 @@ async fn not_found() -> ApiError {
         status: axum::http::StatusCode::NOT_FOUND,
         code: "not_found",
         message: "The requested API endpoint does not exist.",
+        details: None,
     }
 }
