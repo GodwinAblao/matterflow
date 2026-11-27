@@ -15,7 +15,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .init();
 
     let config = Config::from_env()?;
-    let pool = db::create_pool(config.database_url.as_deref())?;
+    let pool = db::create_pool(config.database_url.as_deref())
+        .map_err(|_| matterflow_api::config::InvalidDatabaseUrl)?;
     if pool.is_none() {
         tracing::warn!("DATABASE_URL is not set; readiness will report unavailable");
     }

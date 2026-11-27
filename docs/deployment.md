@@ -58,3 +58,11 @@ Current local checks do not replace this hosted browser verification. A site is 
 - https://render.com/docs/blueprint-spec
 - https://render.com/docs/free
 - https://render.com/docs/deploys
+
+## DATABASE_URL startup diagnostics
+
+If a previous deploy exited with Configuration(RelativeUrlWithoutBase), check that the latest backend commit is deployed. Database configuration now trims outer whitespace, tolerates a complete DATABASE_URL= assignment and one pair of matching outer quotes, and validates the value with SQLx before building the pool. The raw PostgreSQL URL is still the recommended Render value.
+
+A malformed value now produces an explicit Invalid DATABASE_URL startup message without echoing the value or parser error. A psql command, placeholder, variable reference, wrong scheme, or multiline value is rejected. A URL-format error occurs before port binding, so the accompanying no-open-ports warning is a consequence rather than the underlying issue.
+
+After committing and pushing a backend fix, use Manual Deploy > Deploy latest commit on the API service. Auto-deploys are disabled in this Blueprint. Confirm the deploy's commit matches the new Git commit, then check /api/v1/health and /api/v1/ready.
