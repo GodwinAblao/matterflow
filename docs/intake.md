@@ -5,7 +5,7 @@
 1. Enter a demo as Staff and choose New matter on the Matters tab.
 2. Enter a matter title, fictional client label, category, and initial document checklist. Include at least one required document. Optional items can remain missing without blocking readiness.
 3. Create the matter. Its generated reference appears in the register and its checklist opens automatically.
-4. Use Add requirement to extend the checklist before the matter is ready. Record receipts, switch to Reviewer, reselect the new reference, and accept or request corrections.
+4. Use Add requirement to extend the checklist before the matter is ready. Record receipts, switch to Reviewer, and accept or request corrections on the retained matter.
 5. Once every required item is accepted, confirm readiness. The new matter and its actual records are included in analytics.
 
 Reviewer creation can assign a workspace staff member. The Staff demo opens as Alex; choose Alex when testing a complete receipt/review cycle. Assigning Sam demonstrates workload distribution and staff read restrictions. There is no production identity login in this portfolio prototype.

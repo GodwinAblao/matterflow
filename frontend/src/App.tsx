@@ -1,7 +1,8 @@
+import { AboutProject } from "./features/about/AboutProject";
 import { ApiStatus } from "./features/health/ApiStatus";
 import { DemoEntry } from "./features/auth/DemoEntry";
 import { useDemoSession } from "./features/auth/useDemoSession";
-import { DemoWorkspace } from "./features/matters/DemoWorkspace";
+import { SessionWorkspace } from "./features/matters/DemoWorkspace";
 import type { Role } from "./features/auth/useDemoSession";
 import "./App.css";
 
@@ -16,26 +17,29 @@ export default function App() {
           </span>{" "}
           MatterFlow
         </div>
-        {demo.session && (
-          <div className="session-controls">
-            <label>
-              <span className="sr-only">Demo role</span>
-              <select
-                value={demo.session.role}
-                disabled={demo.busy}
-                onChange={(event) =>
-                  void demo.switchRole(event.target.value as Role)
-                }
-              >
-                <option value="staff">Paralegal / Staff</option>
-                <option value="reviewer">Lawyer / Reviewer</option>
-              </select>
-            </label>
-            <button disabled={demo.busy} onClick={() => void demo.end()}>
-              End demo
-            </button>
-          </div>
-        )}
+        <div className="topbar-actions">
+          <AboutProject />
+          {demo.session && (
+            <div className="session-controls">
+              <label>
+                <span className="sr-only">Demo role</span>
+                <select
+                  value={demo.session.role}
+                  disabled={demo.busy}
+                  onChange={(event) =>
+                    void demo.switchRole(event.target.value as Role)
+                  }
+                >
+                  <option value="staff">Paralegal / Staff</option>
+                  <option value="reviewer">Lawyer / Reviewer</option>
+                </select>
+              </label>
+              <button disabled={demo.busy} onClick={() => void demo.end()}>
+                End demo
+              </button>
+            </div>
+          )}
+        </div>
       </header>
       {demo.error && (
         <p className="notice error" role="alert">
@@ -61,8 +65,8 @@ export default function App() {
             </span>
           </div>
           <div aria-busy={demo.busy}>
-            <DemoWorkspace
-              key={demo.session.role}
+            <SessionWorkspace
+              key={demo.session.workspace_id}
               session={demo.session}
               token={demo.token}
               onExpired={demo.expire}

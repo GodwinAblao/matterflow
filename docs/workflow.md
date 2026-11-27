@@ -5,13 +5,13 @@
 1. Open http://localhost:5173 and enter as Staff.
 2. Select MF-001. It starts at intake with missing requirements.
 3. Use Record receipt on its three required checklist items. Leave the optional item missing to see that it does not block readiness.
-4. Switch to Reviewer and select MF-001 again. Accept two required documents and request a correction on the third, explaining what is needed.
+4. Switch to Reviewer; MF-001 remains selected. Accept two required documents and request a correction on the third, explaining what is needed.
 5. Readiness lists the outstanding correction. A received document is not treated as accepted.
-6. Switch to Staff, select MF-001, and record the corrected receipt. The document returns to Received and its previous correction remains in activity history.
-7. Switch to Reviewer, select the same matter, and accept the corrected document.
+6. Switch to Staff and record the corrected receipt on the same matter. The document returns to Received and its previous correction remains in activity history.
+7. Switch to Reviewer and accept the corrected document.
 8. Mark matter ready. The register, counts, readiness result, and activity history refresh.
 
-The current role selector remounts the workspace, so reselect the matter after a role switch. All records and requirements are fictional. Record receipt stores the time of the action; it does not upload a file.
+The selected matter is retained across role switches when the new role can access it. A role-specific list is fetched before rendering any detail; inaccessible selections are hidden. A new demo workspace resets selection. All records and requirements are fictional. Record receipt stores the time of the action; it does not upload a file.
 
 ## Rules
 

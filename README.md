@@ -76,6 +76,7 @@ matterflow/
 ## Verification
 
 ```powershell
+npm.cmd run test:ui
 npm.cmd run lint
 npm.cmd run build
 npm.cmd run format:check
@@ -99,7 +100,7 @@ The schema test rolls back all fixtures. Demo API tests create isolated workspac
 
 ## Deployment direction
 
-React static site and Rust web service on Render, PostgreSQL on Neon. Nothing has been deployed by this setup. Set HOST=0.0.0.0 on the Rust host, use its PORT, set FRONTEND_ORIGIN to the exact frontend origin, and store DATABASE_URL as a backend secret. Set VITE_API_BASE_URL to the Rust API origin before building the frontend. VITE_ values are public and must not contain secrets.
+render.yaml prepares a free React static site and Rust web service on Render, using the existing Neon database. Nothing has been deployed by this setup. See docs/deployment.md for Blueprint settings, secrets, URL checks, and the public-link verification workflow. Set HOST=0.0.0.0 on the Rust host, use its PORT, set FRONTEND_ORIGIN to the exact frontend origin, and store DATABASE_URL as a backend secret. Set VITE_API_BASE_URL to the Rust API origin before building the frontend. VITE_ values are public and must not contain secrets.
 
 Apply migrations and seed explicitly before deploying the API. The API never migrates automatically. Public sessions are limited to thirty active workspaces; see docs/demo.md for expiry and cleanup behavior.
 
@@ -112,3 +113,5 @@ Apply migrations and seed explicitly before deploying the API. The API never mig
 - docs/analytics.md: follow-up actions, metric definitions, scope, drill-downs, CSV and tests
 
 - docs/intake.md: new matter creation, checklist setup, safe retries, assignments and tests
+
+The selected matter now survives role switches when authorized, and the project overview is available from the header. The three frontend regression tests cover selection retention, inaccessible-role handling, and session reset.

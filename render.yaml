@@ -1,0 +1,39 @@
+# Expected public URLs follow these unique service names. Check the actual
+# Render-assigned URLs and update both URL variables if a suffix is added.
+services:
+  - type: web
+    name: godwinablao-matterflow-api
+    runtime: rust
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: cargo build --locked --release -p matterflow-api --bin matterflow-api
+    startCommand: ./target/release/matterflow-api
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: FRONTEND_ORIGIN
+        value: https://godwinablao-matterflow.onrender.com
+      - key: DATABASE_URL
+        sync: false
+      - key: RUST_LOG
+        value: matterflow_api=info,tower_http=info
+
+  - type: web
+    name: godwinablao-matterflow
+    runtime: static
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: VITE_API_BASE_URL
+        value: https://godwinablao-matterflow-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

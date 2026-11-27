@@ -38,10 +38,11 @@ export function ApiStatus() {
     <section className="connection" aria-label="API connection">
       <p role="status" aria-live="polite">
         <span className={"status-dot " + status} aria-hidden="true" />
-        {status === "checking" && "Connecting to the Rust API..."}
-        {status === "connected" && "Rust API connected"}
+        {status === "checking" &&
+          "Starting the demo service... It may take a minute to wake."}
+        {status === "connected" && "Demo service is ready"}
         {status === "unavailable" &&
-          "Rust API is not reachable yet. Start the backend, then retry."}
+          "The demo service is taking longer than expected. Please retry."}
       </p>
       {status === "unavailable" && (
         <button

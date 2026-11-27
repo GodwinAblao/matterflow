@@ -52,3 +52,5 @@ Run npm.cmd run test:demo explicitly against the seeded development database. It
 Document receipt/review mutations, readiness transitions, and transactional activity recording are implemented; see workflow.md. Follow-up actions and the descriptive analytics dashboard are implemented; see analytics.md. Database-level append-only activity permissions remain a later hardening task.
 
 New matters and initial document checklists can now be created from the Matters tab. See intake.md for the complete intake walkthrough and role behavior.
+
+The Matter register displays five records per page by default, with 10/20-row options. Search applies to all authorized loaded matters and resets to the first page. Details remain open while navigating pages. Role switches reopen the page containing the selected matter when it remains authorized. Pagination is client-side over the bounded demo dataset (at most fifty matters per workspace).

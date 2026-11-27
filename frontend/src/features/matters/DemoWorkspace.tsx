@@ -25,13 +25,36 @@ type Props = { token: string; session: DemoSession; onExpired: () => void };
 
 const label = (value: string) => value.replaceAll("_", " ");
 
-export function DemoWorkspace({ token, session, onExpired }: Props) {
+export function SessionWorkspace(props: Props) {
+  const [selectedMatterId, setSelectedMatterId] = useState<string | null>(null);
+  return (
+    <DemoWorkspace
+      key={props.session.role}
+      {...props}
+      selectedMatterId={selectedMatterId}
+      onSelectMatter={setSelectedMatterId}
+    />
+  );
+}
+
+type WorkspaceProps = Props & {
+  selectedMatterId: string | null;
+  onSelectMatter: (id: string) => void;
+};
+function DemoWorkspace({
+  token,
+  session,
+  onExpired,
+  selectedMatterId,
+  onSelectMatter,
+}: WorkspaceProps) {
   const [matters, setMatters] = useState<Matter[] | null>(null);
   const [team, setTeam] = useState<TeamMember[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [search, setSearch] = useState("");
+  const [pageSize, setPageSize] = useState(5);
+  const [requestedPage, setRequestedPage] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [createdNotice, setCreatedNotice] = useState("");
   const [view, setView] = useState<"matters" | "analytics">("matters");
@@ -46,6 +69,7 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
         : Promise.resolve([]),
     ])
       .then(([rows, members]) => {
+        if (controller.signal.aborted) return;
         setMatters(rows);
         setTeam(members);
         setError("");
@@ -74,11 +98,22 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
         Loading your fictional matters...
       </p>
     );
+  const selected = matters.some((matter) => matter.id === selectedMatterId)
+    ? selectedMatterId
+    : null;
+  const selectionUnavailable = selectedMatterId !== null && selected === null;
   const visible = matters.filter((matter) =>
     (matter.reference + " " + matter.title + " " + matter.client_label)
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  const selectedIndex = visible.findIndex((matter) => matter.id === selected);
+  const selectionPage =
+    selectedIndex < 0 ? 1 : Math.floor(selectedIndex / pageSize) + 1;
+  const page = Math.min(pageCount, Math.max(1, requestedPage ?? selectionPage));
+  const pageStart = (page - 1) * pageSize;
+  const pageRows = visible.slice(pageStart, pageStart + pageSize);
   const active = matters.filter((matter) => matter.status !== "closed").length;
   const required = matters.reduce(
     (sum, matter) => sum + matter.required_documents,
@@ -113,7 +148,9 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
           token={token}
           onExpired={onExpired}
           onOpenMatter={(id) => {
-            setSelected(id);
+            onSelectMatter(id);
+            setSearch("");
+            setRequestedPage(null);
             setView("matters");
           }}
         />
@@ -147,6 +184,12 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
           </button>
         </div>
       </div>
+      {selectionUnavailable && (
+        <p className="notice selection-notice" role="status">
+          The previously selected matter is not available in this role. Choose a
+          matter assigned to you below.
+        </p>
+      )}
       {createdNotice && (
         <p className="notice success" role="status">
           Created {createdNotice}. Its checklist is open below.{" "}
@@ -161,8 +204,9 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
           onCancel={() => setCreating(false)}
           onCreated={(id, reference) => {
             setCreating(false);
-            setSelected(id);
+            onSelectMatter(id);
             setSearch("");
+            setRequestedPage(null);
             setCreatedNotice(reference);
             onChanged();
           }}
@@ -195,7 +239,10 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
                 type="search"
                 placeholder="Search matters..."
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setRequestedPage(1);
+                }}
               />
             </label>
           </div>
@@ -209,7 +256,7 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {visible.map((matter) => (
+                {pageRows.map((matter) => (
                   <tr
                     key={matter.id}
                     className={selected === matter.id ? "row-selected" : ""}
@@ -218,7 +265,7 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
                       <button
                         className="text-button"
                         aria-label={"Open " + matter.reference}
-                        onClick={() => setSelected(matter.id)}
+                        onClick={() => onSelectMatter(matter.id)}
                       >
                         {matter.reference}
                       </button>
@@ -261,6 +308,55 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="register-pagination">
+            <p className="muted small" role="status" aria-live="polite">
+              {visible.length === 0
+                ? "No matching matters"
+                : "Showing " +
+                  (pageStart + 1) +
+                  "-" +
+                  Math.min(pageStart + pageSize, visible.length) +
+                  " of " +
+                  visible.length +
+                  " matters"}
+            </p>
+            <label className="page-size">
+              Rows per page
+              <select
+                aria-label="Matters per page"
+                value={pageSize}
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value));
+                  setRequestedPage(1);
+                }}
+              >
+                {[5, 10, 20].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <nav aria-label="Matter register pagination">
+              <button
+                aria-label="Previous matter page"
+                disabled={page <= 1}
+                onClick={() => setRequestedPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {pageCount}
+              </span>
+              <button
+                aria-label="Next matter page"
+                disabled={page >= pageCount}
+                onClick={() => setRequestedPage(page + 1)}
+              >
+                Next
+              </button>
+            </nav>
           </div>
           {visible.length === 0 && (
             <p className="empty">No matters match your search.</p>
