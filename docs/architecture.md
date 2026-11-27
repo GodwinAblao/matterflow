@@ -23,7 +23,7 @@ Status changes and their activity records should be committed in the same databa
 - activity: history written with workflow changes
 - auth: role enforcement and isolated demo sessions
 
-Health, session lifecycle, matter register/detail reads, document receipt/review transitions, and readiness confirmation are implemented. Follow-up actions and role-scoped descriptive analytics are also implemented. The auth service owns transactional demo creation; handlers manage HTTP input and output.
+Health, session lifecycle, matter register/detail reads, document receipt/review transitions, and readiness confirmation are implemented. Follow-up actions, role-scoped descriptive analytics, and matter creation with checklist setup are also implemented. The auth service owns transactional demo creation; handlers manage HTTP input and output.
 
 ## Analytics definitions
 

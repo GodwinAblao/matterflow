@@ -1,3 +1,4 @@
+import { NewRequirementForm } from "./NewRequirementForm";
 import { useEffect, useState } from "react";
 import { ApiError, apiGet, apiRequest } from "../../lib/api";
 import { FollowUpPanel } from "../follow-ups/FollowUpPanel";
@@ -68,6 +69,7 @@ const events: Record<string, string> = {
   "document.accepted": "Document accepted",
   "document.correction_requested": "Correction requested",
   "matter.ready": "Marked ready",
+  "requirement.added": "Checklist requirement added",
   "follow_up.created": "Follow-up created",
   "follow_up.completed": "Follow-up completed",
   "follow_up.reopened": "Follow-up reopened",
@@ -273,6 +275,13 @@ export function MatterDetails({
         )}
       </section>
       <h3>Document checklist</h3>
+      {!locked && detail.documents.length < 30 && (
+        <NewRequirementForm
+          version={detail.matter.version}
+          busy={busy}
+          onChange={change}
+        />
+      )}
       <ul className="checklist">
         {detail.documents.map((document) => (
           <li key={document.id}>

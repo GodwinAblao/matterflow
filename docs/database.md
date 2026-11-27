@@ -51,3 +51,7 @@ Migrations create schema only. The explicit seed command creates a fictional tem
 ## Demo lifecycle implemented
 
 The second migration adds a unique template key and one session per workspace. The seed and session clone lifecycle are now implemented; see demo.md. API requests are scoped to a validated workspace, and staff/reviewer read permissions are enforced. The third migration adds optimistic version counters. Document workflow mutations are now implemented; see workflow.md.
+
+## Matter intake
+
+The fifth migration adds workspace-unique creation keys and payload fingerprints for idempotent matter creation. Existing and seeded matters keep null creation metadata. No additional table is required. See intake.md for transaction and assignment rules.

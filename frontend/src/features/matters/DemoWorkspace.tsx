@@ -1,3 +1,4 @@
+import { NewMatterForm } from "./NewMatterForm";
 import { AnalyticsDashboard } from "../analytics/AnalyticsDashboard";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiGet } from "../../lib/api";
@@ -31,6 +32,8 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createdNotice, setCreatedNotice] = useState("");
   const [view, setView] = useState<"matters" | "analytics">("matters");
   const onChanged = useCallback(() => setAttempt((value) => value + 1), []);
 
@@ -134,8 +137,37 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
               : "All matters in this demo, with a view of the team workload."}
           </p>
         </div>
-        <span className="badge">Fictional demo data</span>
+        <div className="matter-header-actions">
+          <span className="badge">Fictional demo data</span>
+          <button
+            className="primary"
+            onClick={() => setCreating((value) => !value)}
+          >
+            {creating ? "Close form" : "New matter"}
+          </button>
+        </div>
       </div>
+      {createdNotice && (
+        <p className="notice success" role="status">
+          Created {createdNotice}. Its checklist is open below.{" "}
+          <button onClick={() => setCreatedNotice("")}>Dismiss</button>
+        </p>
+      )}
+      {creating && (
+        <NewMatterForm
+          token={token}
+          role={session.role}
+          onExpired={onExpired}
+          onCancel={() => setCreating(false)}
+          onCreated={(id, reference) => {
+            setCreating(false);
+            setSelected(id);
+            setSearch("");
+            setCreatedNotice(reference);
+            onChanged();
+          }}
+        />
+      )}
       <section className="stat-grid" aria-label="Visible matter summary">
         <article>
           <span>Visible matters</span>

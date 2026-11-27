@@ -9,6 +9,7 @@ Independent project inspired by publicly described legal-office workflows. It is
 - Isolated two-hour demo workspaces, each with a copy of twelve sample matters.
 - Staff/reviewer role switching, enforced by the Rust API on every protected request.
 - Staff sees six assigned matters; reviewers see all twelve and the team workload.
+- Matter creation with fictional client labels, role-scoped assignments, and a required/optional checklist builder.
 - Searchable matter register, required-document progress, checklist details, and follow-ups.
 - Versioned PostgreSQL migrations, repeatable synthetic seed, hashed session tokens, expiry, and cleanup.
 
@@ -91,6 +92,7 @@ npm.cmd run db:test
 npm.cmd run test:demo
 npm.cmd run test:workflow
 npm.cmd run test:analytics
+npm.cmd run test:intake
 ```
 
 The schema test rolls back all fixtures. Demo API tests create isolated workspaces and remove them on success. A failed test workspace expires normally. Ordinary cargo test does not contact Neon.
@@ -108,3 +110,5 @@ Apply migrations and seed explicitly before deploying the API. The API never mig
 - docs/workflow.md: document correction cycle, readiness rules, concurrency and API examples
 
 - docs/analytics.md: follow-up actions, metric definitions, scope, drill-downs, CSV and tests
+
+- docs/intake.md: new matter creation, checklist setup, safe retries, assignments and tests

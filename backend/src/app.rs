@@ -41,7 +41,15 @@ pub fn create_router(
             "/api/v1/matters/{matter_id}/follow-ups/{id}",
             axum::routing::patch(follow_ups::update),
         )
-        .route("/api/v1/matters", get(matters::list))
+        .route(
+            "/api/v1/matters",
+            get(matters::list).post(matters::creation::create),
+        )
+        .route("/api/v1/matters/options", get(matters::creation::options))
+        .route(
+            "/api/v1/matters/{id}/requirements",
+            post(matters::creation::add_requirement),
+        )
         .route("/api/v1/matters/{id}", get(matters::detail))
         .route("/api/v1/matters/{id}/ready", post(matters::mark_ready))
         .route(
@@ -53,7 +61,7 @@ pub fn create_router(
             post(documents::review),
         )
         .fallback(not_found)
-        .layer(axum::extract::DefaultBodyLimit::max(4096))
+        .layer(axum::extract::DefaultBodyLimit::max(32 * 1024))
         .layer(cors)
         .layer(tower_http::set_header::SetResponseHeaderLayer::overriding(
             axum::http::header::CACHE_CONTROL,
