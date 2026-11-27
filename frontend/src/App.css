@@ -1,0 +1,20 @@
+.shell { max-width: 1120px; padding: 40px 40px 24px; margin: 0 auto; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 23px; font-weight: 700; letter-spacing: -.7px; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; background: #173d33; border-radius: 9px; color: #fff; font-size: 22px; }
+.intro { padding: 76px 0 48px; max-width: 780px; }
+.eyebrow { color: #707b70; font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+h1 { margin: 20px 0; font-family: Georgia, serif; font-size: clamp(40px, 6.5vw, 72px); font-weight: 400; line-height: 1.08; letter-spacing: -2px; }
+.summary { color: #647269; font-size: 18px; line-height: 1.7; max-width: 530px; }
+.connection { margin-top: 28px; font-size: 14px; }
+.connection p { display: flex; align-items: center; gap: 9px; }
+.status-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #a79a6c; }
+.connected { background: #337c56; }
+.unavailable { background: #ab683c; }
+.modules { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #d4d9cf; border-bottom: 1px solid #d4d9cf; }
+.modules article { padding: 28px 20px 28px 0; }
+.modules article + article { padding-left: 24px; border-left: 1px solid #d4d9cf; }
+.modules span { font-size: 12px; color: #7b867a; }
+h2 { margin: 16px 0 10px; font-size: 18px; font-weight: 600; }
+.modules p { font-size: 14px; line-height: 1.7; color: #647269; margin-bottom: 0; }
+footer { margin-top: 28px; color: #737d72; font-size: 12px; line-height: 1.8; }
+@media (max-width: 620px) { .shell { padding: 24px; } .intro { padding: 48px 0 32px; } .modules { grid-template-columns: 1fr; } .modules article + article { border-left: 0; border-top: 1px solid #d4d9cf; padding-left: 0; } }
