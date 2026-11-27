@@ -18,7 +18,8 @@
     "test:demo": "cargo test -p matterflow-api --test demo -- --ignored",
     "format": "prettier --write frontend/src frontend/vite.config.ts docs README.md package.json",
     "format:check": "prettier --check frontend/src frontend/vite.config.ts docs README.md package.json",
-    "test:workflow": "cargo test -p matterflow-api --test workflow -- --ignored"
+    "test:workflow": "cargo test -p matterflow-api --test workflow -- --ignored",
+    "test:analytics": "cargo test -p matterflow-api --test analytics -- --ignored"
   },
   "devDependencies": {
     "prettier": "3.10.1"

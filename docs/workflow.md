@@ -45,7 +45,7 @@ Repeating a successful readiness confirmation is idempotent: it does not create 
 
 Each write opens a transaction, locks/revalidates the current workspace and session, checks the current database role, then locks the matter before the document. Receipt, review, and readiness all follow this order. Role changes and demo termination wait for an in-flight mutation's authorization locks.
 
-Document writes require the caller's document version. Each successful write increments document and matter versions. Readiness confirmation requires the displayed matter version, preventing confirmation based on an out-of-date checklist. A concurrent final review requires the readiness caller to refresh before confirming.
+Document writes require the caller's document version. Each successful document write increments document and matter versions. Follow-up changes increment their own version and the matter version as well. Readiness confirmation requires the displayed matter version, preventing confirmation based on an out-of-date checklist. A concurrent final review requires the readiness caller to refresh before confirming.
 
 Record changes and activity inserts commit together. Rejected transitions and stale requests produce no workflow event. The correction explanation is copied into the event so later resubmission does not erase history. first_ready_at is set only if absent. Event timestamps use the database clock after locks are acquired, avoiding transaction-start times that could predate a concurrent receipt.
 

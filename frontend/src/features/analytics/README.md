@@ -1,3 +1,3 @@
-# analytics
+# Analytics
 
-Planned feature UI. Add components and API calls when its backend workflow exists.
+Role-scoped descriptive reporting with category filters, underlying records, and documented definitions. See docs/analytics.md.

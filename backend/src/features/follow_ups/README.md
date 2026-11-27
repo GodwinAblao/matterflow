@@ -1,3 +1,3 @@
-# follow_ups
+# Follow-ups
 
-Planned feature. Implementation follows the boundaries in docs/architecture.md.
+Create, complete, reopen, and reschedule tasks with server-enforced ownership and version checks. See docs/analytics.md.

@@ -1,3 +1,3 @@
-# analytics
+# Analytics
 
-Planned feature. Implementation follows the boundaries in docs/architecture.md.
+Role-scoped descriptive reporting with category filters, underlying records, and documented definitions. See docs/analytics.md.

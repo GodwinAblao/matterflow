@@ -1,3 +1,3 @@
-# follow-ups
+# Follow-ups
 
-Planned feature UI. Add components and API calls when its backend workflow exists.
+Create, complete, reopen, and reschedule tasks with server-enforced ownership and version checks. See docs/analytics.md.

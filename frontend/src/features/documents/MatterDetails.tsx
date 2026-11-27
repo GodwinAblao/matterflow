@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiGet, apiRequest } from "../../lib/api";
+import { FollowUpPanel } from "../follow-ups/FollowUpPanel";
+import type { FollowUp } from "../follow-ups/FollowUpPanel";
 import type { Role } from "../auth/useDemoSession";
 
 type Requirement = {
@@ -11,12 +13,6 @@ type Requirement = {
   correction_note: string | null;
   received_at: string | null;
   reviewed_at: string | null;
-};
-type FollowUp = {
-  id: string;
-  title: string;
-  due_on: string;
-  completed_at: string | null;
 };
 type Blocker = {
   requirement_id: string | null;
@@ -31,6 +27,7 @@ type Activity = {
   occurred_at: string;
   details: {
     document_title?: string;
+    follow_up_title?: string;
     note?: string;
     from_status?: string;
     to_status?: string;
@@ -71,6 +68,10 @@ const events: Record<string, string> = {
   "document.accepted": "Document accepted",
   "document.correction_requested": "Correction requested",
   "matter.ready": "Marked ready",
+  "follow_up.created": "Follow-up created",
+  "follow_up.completed": "Follow-up completed",
+  "follow_up.reopened": "Follow-up reopened",
+  "follow_up.rescheduled": "Follow-up rescheduled",
 };
 
 export function MatterDetails({
@@ -114,13 +115,18 @@ export function MatterDetails({
     setDetail(await apiGet<Detail>("/matters/" + id, undefined, token));
     setLoadError("");
   }
-  async function change(path: string, body: unknown, message: string) {
+  async function change(
+    path: string,
+    body: unknown,
+    message: string,
+    method: "POST" | "PATCH" = "POST",
+  ): Promise<boolean> {
     setBusy(true);
     setActionError("");
     setSuccess("");
     try {
       await apiRequest("/matters/" + id + path, {
-        method: "POST",
+        method,
         body,
         token,
       });
@@ -129,10 +135,11 @@ export function MatterDetails({
       setCorrection(null);
       setNote("");
       setSuccess(message);
+      return true;
     } catch (failure) {
       if (failure instanceof ApiError && failure.status === 401) {
         onExpired();
-        return;
+        return false;
       }
       setActionError(
         failure instanceof Error
@@ -149,6 +156,7 @@ export function MatterDetails({
           );
         }
       }
+      return false;
     } finally {
       setBusy(false);
     }
@@ -394,22 +402,12 @@ export function MatterDetails({
           </li>
         ))}
       </ul>
-      <h3>Follow-ups</h3>
-      <ul className="follow-ups">
-        {detail.follow_ups.map((followUp) => (
-          <li key={followUp.id}>
-            <strong>{followUp.title}</strong>
-            <p className="muted small">
-              Due{" "}
-              {new Intl.DateTimeFormat("en-PH", {
-                dateStyle: "medium",
-                timeZone: "Asia/Manila",
-              }).format(new Date(followUp.due_on + "T00:00:00+08:00"))}{" "}
-              - {followUp.completed_at ? "Completed" : "Outstanding"}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <FollowUpPanel
+        rows={detail.follow_ups}
+        closed={detail.matter.status === "closed"}
+        busy={busy}
+        onChange={change}
+      />
       <h3>Activity history</h3>
       <ol className="activity-timeline">
         {detail.activity.map((activity) => (
@@ -417,6 +415,9 @@ export function MatterDetails({
             <strong>
               {events[activity.event_type] ?? label(activity.event_type)}
             </strong>
+            {activity.details.follow_up_title && (
+              <p>{activity.details.follow_up_title}</p>
+            )}
             {activity.details.document_title && (
               <p>{activity.details.document_title}</p>
             )}

@@ -7,7 +7,7 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use crate::{
     error::ApiError,
-    features::{auth::handler as auth, documents, health, matters},
+    features::{analytics, auth::handler as auth, documents, follow_ups, health, matters},
     state::AppState,
 };
 
@@ -35,6 +35,12 @@ pub fn create_router(
                 .delete(auth::end),
         )
         .route("/api/v1/team", get(auth::team))
+        .route("/api/v1/analytics", get(analytics::report))
+        .route("/api/v1/matters/{id}/follow-ups", post(follow_ups::create))
+        .route(
+            "/api/v1/matters/{matter_id}/follow-ups/{id}",
+            axum::routing::patch(follow_ups::update),
+        )
         .route("/api/v1/matters", get(matters::list))
         .route("/api/v1/matters/{id}", get(matters::detail))
         .route("/api/v1/matters/{id}/ready", post(matters::mark_ready))

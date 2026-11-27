@@ -68,6 +68,9 @@ pub struct FollowUp {
     pub title: String,
     pub due_on: NaiveDate,
     pub completed_at: Option<DateTime<Utc>>,
+    pub version: i32,
+    pub assigned_name: Option<String>,
+    pub can_edit: bool,
 }
 
 #[derive(Serialize)]
@@ -102,8 +105,8 @@ pub async fn detail(
         .ok_or_else(ApiError::not_found)?;
     let documents = sqlx::query_as::<_, Requirement>("SELECT id, title, is_required, status, correction_note, version, received_at, reviewed_at FROM matterflow.document_requirements WHERE workspace_id = $1 AND matter_id = $2 ORDER BY title")
         .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
-    let follow_ups = sqlx::query_as::<_, FollowUp>("SELECT id, title, due_on, completed_at FROM matterflow.follow_ups WHERE workspace_id = $1 AND matter_id = $2 ORDER BY due_on, id")
-        .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
+    let follow_ups = sqlx::query_as::<_, FollowUp>("SELECT f.id,f.title,f.due_on,f.completed_at,f.version,u.display_name AS assigned_name,COALESCE($3='reviewer' OR f.assigned_to=$4,FALSE) AS can_edit FROM matterflow.follow_ups f LEFT JOIN matterflow.app_users u ON (u.workspace_id,u.id)=(f.workspace_id,f.assigned_to) WHERE f.workspace_id=$1 AND f.matter_id=$2 ORDER BY f.due_on,f.id")
+        .bind(session.workspace_id).bind(id).bind(&session.role).bind(session.user_id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
     let readiness = workflow::readiness(&mut tx, session.workspace_id, id).await?;
     let activity=sqlx::query_as::<_, workflow::Activity>("SELECT e.id,e.event_type,u.display_name AS actor_name,e.details,e.occurred_at FROM matterflow.activity_events e LEFT JOIN matterflow.app_users u ON (u.workspace_id,u.id)=(e.workspace_id,e.actor_id) WHERE e.workspace_id=$1 AND e.matter_id=$2 ORDER BY e.occurred_at DESC,e.id DESC LIMIT 100")
         .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;

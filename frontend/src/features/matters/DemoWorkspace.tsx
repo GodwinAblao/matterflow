@@ -1,3 +1,4 @@
+import { AnalyticsDashboard } from "../analytics/AnalyticsDashboard";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiGet } from "../../lib/api";
 import type { DemoSession } from "../auth/useDemoSession";
@@ -30,6 +31,7 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"matters" | "analytics">("matters");
   const onChanged = useCallback(() => setAttempt((value) => value + 1), []);
 
   useEffect(() => {
@@ -84,8 +86,39 @@ export function DemoWorkspace({ token, session, onExpired }: Props) {
     0,
   );
 
+  const navigation = (
+    <nav className="workspace-nav" aria-label="Workspace sections">
+      <button
+        aria-pressed={view === "matters"}
+        onClick={() => setView("matters")}
+      >
+        Matters
+      </button>
+      <button
+        aria-pressed={view === "analytics"}
+        onClick={() => setView("analytics")}
+      >
+        Analytics
+      </button>
+    </nav>
+  );
+  if (view === "analytics")
+    return (
+      <div className="workspace">
+        {navigation}
+        <AnalyticsDashboard
+          token={token}
+          onExpired={onExpired}
+          onOpenMatter={(id) => {
+            setSelected(id);
+            setView("matters");
+          }}
+        />
+      </div>
+    );
   return (
     <div className="workspace">
+      {navigation}
       {error && (
         <div role="alert" className="notice error">
           {error} <button onClick={onChanged}>Retry register refresh</button>
