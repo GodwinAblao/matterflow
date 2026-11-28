@@ -58,6 +58,11 @@ type Selection = {
   label: string;
 };
 const label = (value: string) => value.replaceAll("_", " ");
+function formatDays(value: number | null) {
+  if (value === null) return "N/A";
+  const days = Math.round(value);
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
 
 export function AnalyticsDashboard(props: Props) {
   const [category, setCategory] = useState("");
@@ -352,11 +357,7 @@ function ReportView({
           }
         >
           <span>Median time to first readiness</span>
-          <strong>
-            {m.median_days_to_readiness === null
-              ? "N/A"
-              : m.median_days_to_readiness.toFixed(1) + " days"}
-          </strong>
+          <strong>{formatDays(m.median_days_to_readiness)}</strong>
           <small>{m.readiness_cohort} matters reached readiness</small>
         </button>
       </div>
@@ -517,8 +518,7 @@ function ReportView({
                       {row.title}
                       {selection.filter === "cohort" && (
                         <p className="muted small">
-                          {row.days_to_readiness?.toFixed(2)} days to first
-                          readiness
+                          {formatDays(row.days_to_readiness)} to first readiness
                         </p>
                       )}
                     </td>
@@ -625,7 +625,9 @@ function ReportView({
           <li>
             Median readiness time includes only matters with a recorded first
             readiness, including closed matters. Unfinished matters are excluded
-            from that metric and remain visible in the aging report.
+            from that metric and remain visible in the aging report. Readiness
+            durations are displayed rounded to the nearest whole day;
+            calculations and CSV exports retain their original precision.
           </li>
         </ul>
       </details>
