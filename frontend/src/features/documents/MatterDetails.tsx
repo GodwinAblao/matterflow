@@ -1,3 +1,4 @@
+import { MatterManagement } from "../matters/MatterManagement";
 import { NewRequirementForm } from "./NewRequirementForm";
 import { useEffect, useState } from "react";
 import { ApiError, apiGet, apiRequest } from "../../lib/api";
@@ -40,9 +41,13 @@ type Detail = {
     reference: string;
     title: string;
     assigned_to: string | null;
+    assigned_staff_id: string | null;
+    client_label: string;
+    service_category: string;
     status: string;
     version: number;
   };
+  can_delete: boolean;
   documents: Requirement[];
   follow_ups: FollowUp[];
   readiness: { documents_complete: boolean; blockers: Blocker[] };
@@ -54,6 +59,7 @@ type Props = {
   role: Role;
   onExpired: () => void;
   onChanged: () => void;
+  onDeleted?: () => void;
 };
 const label = (value: string) => value.replaceAll("_", " ");
 const timestamp = (value: string) =>
@@ -64,6 +70,8 @@ const timestamp = (value: string) =>
   }).format(new Date(value));
 const events: Record<string, string> = {
   "matter.opened": "Matter opened",
+  "matter.updated": "Matter details updated",
+  "matter.archived": "Matter archived",
   "document.received": "Document received",
   "document.resubmitted": "Corrected document received",
   "document.accepted": "Document accepted",
@@ -82,6 +90,7 @@ export function MatterDetails({
   role,
   onExpired,
   onChanged,
+  onDeleted,
 }: Props) {
   const [detail, setDetail] = useState<Detail | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -195,6 +204,23 @@ export function MatterDetails({
           </button>
         </p>
       )}
+      <MatterManagement
+        matter={detail.matter}
+        canDelete={detail.can_delete}
+        token={token}
+        role={role}
+        busy={busy}
+        onBusy={setBusy}
+        onExpired={onExpired}
+        onSaved={async () => {
+          await reload();
+          onChanged();
+        }}
+        onDeleted={() => {
+          onDeleted?.();
+          onChanged();
+        }}
+      />
       {actionError && (
         <p className="notice error workflow-notice" role="alert">
           {actionError}

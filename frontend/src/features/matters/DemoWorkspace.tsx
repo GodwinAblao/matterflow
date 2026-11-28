@@ -39,7 +39,7 @@ export function SessionWorkspace(props: Props) {
 
 type WorkspaceProps = Props & {
   selectedMatterId: string | null;
-  onSelectMatter: (id: string) => void;
+  onSelectMatter: (id: string | null) => void;
 };
 function DemoWorkspace({
   token,
@@ -371,6 +371,10 @@ function DemoWorkspace({
               onExpired={onExpired}
               role={session.role}
               onChanged={onChanged}
+              onDeleted={() => {
+                onSelectMatter(null);
+                setCreatedNotice("Draft deleted.");
+              }}
             />
           ) : (
             <div className="empty detail-empty">

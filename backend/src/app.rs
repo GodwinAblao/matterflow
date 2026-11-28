@@ -50,7 +50,16 @@ pub fn create_router(
             "/api/v1/matters/{id}/requirements",
             post(matters::creation::add_requirement),
         )
-        .route("/api/v1/matters/{id}", get(matters::detail))
+        .route(
+            "/api/v1/matters/{id}",
+            get(matters::detail)
+                .patch(matters::management::update)
+                .delete(matters::management::delete),
+        )
+        .route(
+            "/api/v1/matters/{id}/archive",
+            post(matters::management::archive),
+        )
         .route("/api/v1/matters/{id}/ready", post(matters::mark_ready))
         .route(
             "/api/v1/matters/{matter_id}/documents/{id}/receive",

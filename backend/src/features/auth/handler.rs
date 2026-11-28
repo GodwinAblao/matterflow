@@ -65,7 +65,7 @@ pub async fn team(
     let team = sqlx::query_as::<_, TeamMember>(
         "SELECT u.display_name, u.role, count(m.id) AS active_matters
          FROM matterflow.app_users u LEFT JOIN matterflow.matters m
-           ON m.workspace_id = u.workspace_id AND m.assigned_staff_id = u.id AND m.status <> 'closed'
+           ON m.workspace_id = u.workspace_id AND m.assigned_staff_id = u.id AND m.status <> 'closed' AND m.deleted_at IS NULL
          WHERE u.workspace_id = $1 GROUP BY u.id ORDER BY u.role DESC, u.display_name",
     ).bind(session.workspace_id).fetch_all(pool(&state)?).await.map_err(ApiError::database)?;
     Ok(Json(team))

@@ -10,6 +10,7 @@ Independent project inspired by publicly described legal-office workflows. It is
 - Staff/reviewer role switching, enforced by the Rust API on every protected request.
 - Staff sees six assigned matters; reviewers see all twelve and the team workload.
 - Matter creation with fictional client labels, role-scoped assignments, and a required/optional checklist builder.
+- Matter editing, reviewer reassignment and archiving, and confirmed deletion of unused drafts with preserved references and audit history.
 - Searchable matter register, required-document progress, checklist details, and follow-ups.
 - Versioned PostgreSQL migrations, repeatable synthetic seed, hashed session tokens, expiry, and cleanup.
 
@@ -115,3 +116,5 @@ Apply migrations and seed explicitly before deploying the API. The API never mig
 - docs/intake.md: new matter creation, checklist setup, safe retries, assignments and tests
 
 The selected matter now survives role switches when authorized, and the project overview is available from the header. The frontend regression tests cover selection retention, inaccessible-role handling, and session reset.
+
+- docs/crud.md: matter editing, deletion, archiving, permissions and verification.

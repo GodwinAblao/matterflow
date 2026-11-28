@@ -21,7 +21,8 @@
     "test:workflow": "cargo test -p matterflow-api --test workflow -- --ignored",
     "test:analytics": "cargo test -p matterflow-api --test analytics -- --ignored",
     "test:intake": "cargo test -p matterflow-api --test intake -- --ignored",
-    "test:ui": "npm run test --workspace frontend"
+    "test:ui": "npm run test --workspace frontend",
+    "test:management": "cargo test -p matterflow-api --test management -- --ignored"
   },
   "devDependencies": {
     "prettier": "3.10.1"

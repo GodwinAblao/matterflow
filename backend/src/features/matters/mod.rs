@@ -1,3 +1,4 @@
+pub mod management;
 pub mod workflow;
 use axum::{
     Json,
@@ -24,16 +25,17 @@ pub struct MatterSummary {
     pub status: String,
     pub version: i32,
     pub assigned_to: Option<String>,
+    pub assigned_staff_id: Option<Uuid>,
     pub required_documents: i64,
     pub accepted_documents: i64,
 }
 
 const SUMMARY: &str = "SELECT m.id, m.reference, m.title, m.client_label, m.service_category, m.status, m.version,
-    u.display_name AS assigned_to,
+    u.display_name AS assigned_to, m.assigned_staff_id,
     (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required) AS required_documents,
     (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required AND d.status = 'accepted') AS accepted_documents
     FROM matterflow.matters m LEFT JOIN matterflow.app_users u ON (u.workspace_id, u.id) = (m.workspace_id, m.assigned_staff_id)
-    WHERE m.workspace_id = $1 AND ($2 = 'reviewer' OR m.assigned_staff_id = $3)";
+    WHERE m.deleted_at IS NULL AND m.workspace_id = $1 AND ($2 = 'reviewer' OR m.assigned_staff_id = $3)";
 
 pub async fn list(
     session: Session,
@@ -79,6 +81,7 @@ pub struct MatterDetail {
     pub documents: Vec<Requirement>,
     pub follow_ups: Vec<FollowUp>,
     pub readiness: workflow::Readiness,
+    pub can_delete: bool,
     pub activity: Vec<workflow::Activity>,
 }
 
@@ -107,6 +110,16 @@ pub async fn detail(
         .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
     let follow_ups = sqlx::query_as::<_, FollowUp>("SELECT f.id,f.title,f.due_on,f.completed_at,f.version,u.display_name AS assigned_name,COALESCE($3='reviewer' OR f.assigned_to=$4,FALSE) AS can_edit FROM matterflow.follow_ups f LEFT JOIN matterflow.app_users u ON (u.workspace_id,u.id)=(f.workspace_id,f.assigned_to) WHERE f.workspace_id=$1 AND f.matter_id=$2 ORDER BY f.due_on,f.id")
         .bind(session.workspace_id).bind(id).bind(&session.role).bind(session.user_id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
+    let delete_query = format!(
+        "SELECT {} FROM matterflow.matters m WHERE workspace_id=$1 AND id=$2",
+        management::DELETABLE
+    );
+    let can_delete: bool = sqlx::query_scalar(&delete_query)
+        .bind(session.workspace_id)
+        .bind(id)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(ApiError::database)?;
     let readiness = workflow::readiness(&mut tx, session.workspace_id, id).await?;
     let activity=sqlx::query_as::<_, workflow::Activity>("SELECT e.id,e.event_type,u.display_name AS actor_name,e.details,e.occurred_at FROM matterflow.activity_events e LEFT JOIN matterflow.app_users u ON (u.workspace_id,u.id)=(e.workspace_id,e.actor_id) WHERE e.workspace_id=$1 AND e.matter_id=$2 ORDER BY e.occurred_at DESC,e.id DESC LIMIT 100")
         .bind(session.workspace_id).bind(id).fetch_all(&mut *tx).await.map_err(ApiError::database)?;
@@ -116,6 +129,7 @@ pub async fn detail(
         documents,
         follow_ups,
         readiness,
+        can_delete,
         activity,
     }))
 }

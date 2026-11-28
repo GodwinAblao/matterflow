@@ -26,7 +26,7 @@ pub enum Category {
     Other,
 }
 impl Category {
-    fn as_str(&self) -> &'static str {
+    pub(super) fn as_str(&self) -> &'static str {
         match self {
             Self::Property => "property",
             Self::Business => "business",
@@ -122,6 +122,13 @@ pub async fn create(
             .bind(actor.workspace_id).bind(input.assigned_staff_id).fetch_optional(&mut *tx).await.map_err(ApiError::database)?.ok_or_else(||ApiError::validation("Choose a staff member from this demo."))?
     };
     let fingerprint=hex::encode(Sha256::digest(serde_json::to_vec(&json!({"title":input.title,"client":input.client_label,"category":input.service_category,"assigned":assigned,"documents":input.documents})).map_err(|_|ApiError::internal())?));
+    let deleted:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM matterflow.matters WHERE workspace_id=$1 AND creation_key=$2 AND deleted_at IS NOT NULL)").bind(actor.workspace_id).bind(input.creation_key).fetch_one(&mut *tx).await.map_err(ApiError::database)?;
+    if deleted {
+        return Err(ApiError::conflict(
+            "matter_deleted",
+            "This creation request belongs to a deleted draft. Start a new creation request.",
+        ));
+    }
     let previous:Option<(Uuid,String,String)>=sqlx::query_as("SELECT id,reference,creation_fingerprint FROM matterflow.matters WHERE workspace_id=$1 AND creation_key=$2")
         .bind(actor.workspace_id).bind(input.creation_key).fetch_optional(&mut *tx).await.map_err(ApiError::database)?;
     if let Some((id, reference, previous_fingerprint)) = previous {

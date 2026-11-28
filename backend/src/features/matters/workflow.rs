@@ -50,7 +50,7 @@ pub async fn lock_matter(
     actor: &Session,
     matter_id: Uuid,
 ) -> Result<LockedMatter, ApiError> {
-    sqlx::query_as::<_, LockedMatter>("SELECT status, version FROM matterflow.matters WHERE workspace_id=$1 AND id=$2 AND ($3='reviewer' OR assigned_staff_id=$4) FOR UPDATE")
+    sqlx::query_as::<_, LockedMatter>("SELECT status, version FROM matterflow.matters WHERE deleted_at IS NULL AND workspace_id=$1 AND id=$2 AND ($3='reviewer' OR assigned_staff_id=$4) FOR UPDATE")
         .bind(actor.workspace_id).bind(matter_id).bind(&actor.role).bind(actor.user_id)
         .fetch_optional(&mut **tx).await.map_err(ApiError::database)?.ok_or_else(ApiError::not_found)
 }
