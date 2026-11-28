@@ -28,12 +28,14 @@ pub struct MatterSummary {
     pub assigned_staff_id: Option<Uuid>,
     pub required_documents: i64,
     pub accepted_documents: i64,
+    pub received_documents: i64,
 }
 
 const SUMMARY: &str = "SELECT m.id, m.reference, m.title, m.client_label, m.service_category, m.status, m.version,
     u.display_name AS assigned_to, m.assigned_staff_id,
     (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required) AS required_documents,
-    (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required AND d.status = 'accepted') AS accepted_documents
+    (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required AND d.status = 'accepted') AS accepted_documents,
+    (SELECT count(*) FROM matterflow.document_requirements d WHERE d.workspace_id = m.workspace_id AND d.matter_id = m.id AND d.is_required AND d.received_at IS NOT NULL) AS received_documents
     FROM matterflow.matters m LEFT JOIN matterflow.app_users u ON (u.workspace_id, u.id) = (m.workspace_id, m.assigned_staff_id)
     WHERE m.deleted_at IS NULL AND m.workspace_id = $1 AND ($2 = 'reviewer' OR m.assigned_staff_id = $3)";
 

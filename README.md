@@ -11,7 +11,7 @@ Independent project inspired by publicly described legal-office workflows. It is
 - Staff sees six assigned matters; reviewers see all twelve and the team workload.
 - Matter creation with fictional client labels, role-scoped assignments, and a required/optional checklist builder.
 - Matter editing, reviewer reassignment and archiving, and confirmed deletion of unused drafts with preserved references and audit history.
-- Searchable matter register, required-document progress, checklist details, and follow-ups.
+- Searchable, paginated matter register with separate receipt and acceptance counts, checklist details, and follow-ups.
 - Versioned PostgreSQL migrations, repeatable synthetic seed, hashed session tokens, expiry, and cleanup.
 
 Staff receipt/resubmission, reviewer acceptance/correction requests, readiness blockers, and transactional activity history are implemented. Follow-up creation/completion/reopening/rescheduling and the descriptive analytics dashboard are implemented, including category filters, interactive record drill-downs, and CSV export.

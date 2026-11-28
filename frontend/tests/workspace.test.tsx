@@ -27,6 +27,7 @@ const base = {
   assigned_to: "Alex Demo",
   required_documents: 2,
   accepted_documents: 0,
+  received_documents: 1,
 };
 const shared = { ...base, id: "shared-matter", reference: "MF-001" };
 const reviewerOnly = {
@@ -221,4 +222,17 @@ test("opens the correct page for a preserved selection after a role switch", asy
   await render("reviewer");
   expect(details()?.textContent).toBe("matter-11");
   expect(container.textContent).toContain("Page 3 of 3");
+});
+
+test("shows receipt separately from reviewer acceptance", async () => {
+  await render("staff");
+  expect(container.textContent).toContain("Required documents accepted");
+  expect(container.querySelector(".receipt-count")?.textContent).toBe(
+    "Received: 1 / 2",
+  );
+  expect(
+    container
+      .querySelector('[role="progressbar"]')
+      ?.getAttribute("aria-valuenow"),
+  ).toBe("0");
 });

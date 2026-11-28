@@ -12,7 +12,7 @@ Thank you for considering my application for the Programmer OJT - Rust student i
 
 For your evaluation, I am submitting MatterFlow, an independent legal document readiness and operations analytics prototype that I developed using Rust, Axum, PostgreSQL, React, and TypeScript.
 
-The project demonstrates matter intake, staff and reviewer permissions, document checklist review and correction workflows, administrative follow-ups, and activity history. As a BS Information Technology student specializing in Business Analytics, I also included descriptive analytics for document completeness, outstanding requirements, overdue follow-ups, and time to first readiness, with record drill-downs and CSV export.
+The project demonstrates matter creation and editing, protected draft deletion and reviewer archiving, staff and reviewer permissions, document checklist review and correction workflows, administrative follow-ups, and activity history. As a BS Information Technology student specializing in Business Analytics, I also included descriptive analytics for document completeness, outstanding requirements, overdue follow-ups, and time to first readiness, with record drill-downs and CSV export.
 
 Live demo: https://godwinablao-matterflow.onrender.com
 Source code: https://github.com/GodwinAblao/matterflow

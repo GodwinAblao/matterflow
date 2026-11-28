@@ -210,3 +210,96 @@ async fn workflow_matters_require_reviewer_archiving_and_reassignment_moves_open
     assert_eq!(report["metrics"]["active_matters"], 10);
     demo.finish().await;
 }
+
+#[tokio::test]
+#[ignore = "requires migrated and seeded development database"]
+async fn receipt_and_acceptance_are_distinct_and_follow_up_completion_changes_neither() {
+    let demo = Demo::new().await;
+    let (_, created) = demo.request("POST", "/matters", draft()).await;
+    let id = created["id"].as_str().unwrap();
+    let path = format!("/matters/{id}");
+    let detail = demo.detail(id).await;
+    assert_eq!(detail["matter"]["received_documents"], 0);
+    assert_eq!(detail["matter"]["accepted_documents"], 0);
+    let document = detail["documents"][0]["id"].as_str().unwrap();
+    let docpath = format!("{path}/documents/{document}");
+    assert_eq!(
+        demo.request(
+            "POST",
+            &format!("{docpath}/receive"),
+            json!({"expected_version":0})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let (_, follow) = demo
+        .request(
+            "POST",
+            &format!("{path}/follow-ups"),
+            json!({"title":"Synthetic receipt reminder","due_on":"2026-12-08"}),
+        )
+        .await;
+    assert_eq!(
+        demo.request(
+            "PATCH",
+            &format!("{path}/follow-ups/{}", follow["id"].as_str().unwrap()),
+            json!({"expected_version":0,"action":"complete","due_on":null})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let received = demo.detail(id).await;
+    assert_eq!(received["matter"]["received_documents"], 1);
+    assert_eq!(received["matter"]["accepted_documents"], 0);
+    demo.role("reviewer").await;
+    assert_eq!(
+        demo.request(
+            "POST",
+            &format!("{docpath}/review"),
+            json!({"expected_version":1,"outcome":"needs_correction","note":"Synthetic correction"})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let corrected = demo.detail(id).await;
+    assert_eq!(corrected["matter"]["received_documents"], 1);
+    assert_eq!(corrected["matter"]["accepted_documents"], 0);
+    demo.role("staff").await;
+    assert_eq!(
+        demo.request(
+            "POST",
+            &format!("{docpath}/receive"),
+            json!({"expected_version":2})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    demo.role("reviewer").await;
+    assert_eq!(
+        demo.request(
+            "POST",
+            &format!("{docpath}/review"),
+            json!({"expected_version":3,"outcome":"accepted","note":null})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let accepted = demo.detail(id).await;
+    assert_eq!(accepted["matter"]["received_documents"], 1);
+    assert_eq!(accepted["matter"]["accepted_documents"], 1);
+    let rows = demo.request("GET", "/matters", Value::Null).await.1;
+    let row = rows
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["id"] == created["id"])
+        .unwrap();
+    assert_eq!(row["received_documents"], 1);
+    assert_eq!(row["accepted_documents"], 1);
+    demo.finish().await;
+}

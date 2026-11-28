@@ -1353,3 +1353,7 @@ td:last-child {
     width: 100%;
   }
 }
+
+.receipt-count {
+  margin: 0 0 5px;
+}

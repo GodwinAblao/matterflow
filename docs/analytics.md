@@ -40,3 +40,7 @@ Task versions and can_edit are returned with matter details. Stale updates and i
 ## Verification
 
 Run npm.cmd run test:analytics against the migrated and seeded development database. Tests create isolated demo workspaces and remove them on success. The controlled fixture verifies 50% completeness, a three-day readiness median, exclusion of unfinished matters from that cohort, empty denominators, role/workspace scope, due-today boundaries, task ownership, activity records, stale versions, and updated overdue counts after task actions. The pure Rust median test runs during ordinary cargo test without contacting Neon.
+
+## Register receipt count
+
+The register separates required-document receipt from reviewer acceptance. Received counts required checklist items with a recorded received_at timestamp, including accepted items and items needing correction. It counts each requirement once, not each resubmission. The accepted progress bar and completeness metric count only accepted required items. Completing a follow-up changes neither count.

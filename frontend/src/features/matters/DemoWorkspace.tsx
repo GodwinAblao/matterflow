@@ -15,6 +15,7 @@ type Matter = {
   assigned_to: string | null;
   required_documents: number;
   accepted_documents: number;
+  received_documents?: number;
 };
 type TeamMember = {
   display_name: string;
@@ -252,7 +253,7 @@ function DemoWorkspace({
                 <tr>
                   <th scope="col">Matter</th>
                   <th scope="col">Stage</th>
-                  <th scope="col">Required documents</th>
+                  <th scope="col">Required documents accepted</th>
                 </tr>
               </thead>
               <tbody>
@@ -278,6 +279,15 @@ function DemoWorkspace({
                       </span>
                     </td>
                     <td>
+                      {matter.received_documents !== undefined && (
+                        <p
+                          className="receipt-count muted small"
+                          title="Required documents with a recorded receipt, including accepted documents and documents needing correction."
+                        >
+                          Received: {matter.received_documents} /{" "}
+                          {matter.required_documents}
+                        </p>
+                      )}
                       <strong>
                         {matter.accepted_documents} /{" "}
                         {matter.required_documents}
