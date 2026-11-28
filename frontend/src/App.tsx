@@ -86,8 +86,15 @@ export default function App() {
               Keep matters organized, see what is missing, and understand the
               work ahead.
             </p>
-            <DemoEntry busy={demo.busy} onEnter={demo.enter} />
-            <ApiStatus />
+            <ApiStatus>
+              {(ready) => (
+                <DemoEntry
+                  busy={demo.busy}
+                  ready={ready}
+                  onEnter={demo.enter}
+                />
+              )}
+            </ApiStatus>
           </div>
           <section className="modules" aria-label="Inside the demo">
             <article>

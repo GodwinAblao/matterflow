@@ -1,16 +1,20 @@
 import { useState } from "react";
 import type { Role } from "./useDemoSession";
 
-type Props = { busy: boolean; onEnter: (role: Role) => Promise<void> };
+type Props = {
+  busy: boolean;
+  ready: boolean;
+  onEnter: (role: Role) => Promise<void>;
+};
 
-export function DemoEntry({ busy, onEnter }: Props) {
+export function DemoEntry({ busy, ready, onEnter }: Props) {
   const [role, setRole] = useState<Role>("staff");
   return (
     <form
       className="demo-entry"
       onSubmit={(event) => {
         event.preventDefault();
-        void onEnter(role);
+        if (ready && !busy) void onEnter(role);
       }}
     >
       <fieldset disabled={busy}>
@@ -52,8 +56,12 @@ export function DemoEntry({ busy, onEnter }: Props) {
           </label>
         </div>
       </fieldset>
-      <button className="primary" disabled={busy} type="submit">
-        {busy ? "Preparing your demo..." : "Explore Demo"}
+      <button className="primary" disabled={busy || !ready} type="submit">
+        {busy
+          ? "Preparing your workspace..."
+          : ready
+            ? "Explore Demo"
+            : "Getting demo ready..."}
       </button>
       <p className="muted small">
         No registration needed. Your private sample workspace lasts two hours.
