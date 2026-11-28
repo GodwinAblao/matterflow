@@ -13,7 +13,7 @@ export function NewRequirementForm({ version, busy, onChange }: Props) {
       await onChange(
         "/requirements",
         { expected_version: version, title, is_required: required },
-        "Checklist requirement added. Readiness has been refreshed.",
+        "Document added to the checklist. The ready check has been updated.",
       )
     ) {
       setOpen(false);
@@ -55,7 +55,7 @@ export function NewRequirementForm({ version, busy, onChange }: Props) {
               checked={required}
               onChange={(event) => setRequired(event.target.checked)}
             />
-            Required for readiness
+            Needed before marking ready
           </label>
           <button type="submit" disabled={busy || !title.trim()}>
             Save requirement

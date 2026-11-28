@@ -1,3 +1,4 @@
+import { displayLabel as label } from "../../lib/displayLabel";
 import { NewMatterForm } from "./NewMatterForm";
 import { AnalyticsDashboard } from "../analytics/AnalyticsDashboard";
 import { useCallback, useEffect, useState } from "react";
@@ -23,8 +24,6 @@ type TeamMember = {
   active_matters: number;
 };
 type Props = { token: string; session: DemoSession; onExpired: () => void };
-
-const label = (value: string) => value.replaceAll("_", " ");
 
 export function SessionWorkspace(props: Props) {
   const [selectedMatterId, setSelectedMatterId] = useState<string | null>(null);
@@ -223,7 +222,7 @@ function DemoWorkspace({
           <strong>{active}</strong>
         </article>
         <article>
-          <span>Required documents accepted</span>
+          <span>Required documents approved</span>
           <strong>
             {accepted}
             <small> / {required}</small>
@@ -253,7 +252,7 @@ function DemoWorkspace({
                 <tr>
                   <th scope="col">Matter</th>
                   <th scope="col">Stage</th>
-                  <th scope="col">Required documents accepted</th>
+                  <th scope="col">Required documents approved</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,7 +281,7 @@ function DemoWorkspace({
                       {matter.received_documents !== undefined && (
                         <p
                           className="receipt-count muted small"
-                          title="Required documents with a recorded receipt, including accepted documents and documents needing correction."
+                          title="Required documents with a recorded receipt, including approved documents and documents needing correction."
                         >
                           Received: {matter.received_documents} /{" "}
                           {matter.required_documents}
@@ -296,7 +295,7 @@ function DemoWorkspace({
                         className="progress"
                         role="progressbar"
                         aria-label={
-                          matter.reference + " required documents accepted"
+                          matter.reference + " required documents approved"
                         }
                         aria-valuenow={matter.accepted_documents}
                         aria-valuemin={0}

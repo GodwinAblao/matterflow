@@ -32,9 +32,9 @@ This submission focuses on Rust rather than claiming C++, Node.js backend, or AS
 
 1. Open the demo and choose Explore Demo. Start as Staff. The initial register shows six assigned matters. Use the search and pagination controls.
 2. Create a fictional matter in the property category. Add one required checklist item and optionally a supporting item. The new matter appears in the register.
-3. Choose Edit matter to correct its title while preserving its reference. Record receipt of its required item: the Received count increases, while the accepted count changes only after reviewer acceptance.
+3. Choose Edit matter to correct its title while preserving its reference. Record document received of its required item: the Received count increases, while the approved count changes only after reviewer approval.
 4. Switch to Reviewer. Request a correction with a note. Observe that document readiness remains blocked.
-5. Switch to Staff, record resubmission, then switch back to Reviewer and accept the item. Confirm readiness once all required items are accepted. Review the activity history.
+5. Switch to Staff, record resubmission, then switch back to Reviewer and approve the item. Confirm readiness once all required items are accepted. Review the activity history.
 6. Add an administrative follow-up with an explicit date. Inspect Analytics, filter by category, and drill into the relevant records. Complete the follow-up and observe the report change. Export a filtered table as CSV.
 
 Reviewers initially see twelve seeded matters, plus any matters created in their workspace. To evaluate deletion, create an extra unused draft, choose Delete draft, and confirm its reference. Reviewers can archive matters with workflow history; they become Closed and retain their records. A new visitor's workspace starts separately. Sessions expire after two hours; do not enter real client information.

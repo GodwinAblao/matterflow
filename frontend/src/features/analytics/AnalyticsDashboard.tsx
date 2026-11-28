@@ -1,3 +1,4 @@
+import { displayLabel as label } from "../../lib/displayLabel";
 import { useEffect, useState } from "react";
 import { ApiError, apiGet } from "../../lib/api";
 type Matter = {
@@ -57,7 +58,7 @@ type Selection = {
   filter: string;
   label: string;
 };
-const label = (value: string) => value.replaceAll("_", " ");
+
 function formatDays(value: number | null) {
   if (value === null) return "N/A";
   const days = Math.round(value);
@@ -70,14 +71,14 @@ export function AnalyticsDashboard(props: Props) {
     <section className="analytics">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">DESCRIPTIVE ANALYTICS</p>
-          <h1>Work in perspective</h1>
+          <p className="eyebrow">WORK SUMMARY</p>
+          <h1>Work summary</h1>
           <p className="muted">
-            Explore the records behind your workload and document progress.
+            See what needs attention and how document preparation is going.
           </p>
         </div>
         <label className="category-filter">
-          Service category
+          Type of service
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
@@ -112,7 +113,7 @@ function ReportView({
   const [selection, setSelection] = useState<Selection>({
     kind: "matters",
     filter: "all",
-    label: "All visible matters",
+    label: "All matters you can access",
   });
   useEffect(() => {
     const controller = new AbortController();
@@ -238,15 +239,15 @@ function ReportView({
               "Reference",
               "Matter",
               "Stage",
-              "Assignee",
-              "Accepted required documents",
+              "Assigned to",
+              "Approved required documents",
               "Required documents",
-              "Days to first readiness",
+              "Days until documents were ready",
             ],
             ...matters.map((row) => [
               row.reference,
               row.title,
-              row.status,
+              label(row.status),
               row.assigned_to ?? "Unassigned",
               row.accepted_documents,
               row.required_documents,
@@ -255,11 +256,11 @@ function ReportView({
           ]
         : selection.kind === "requirements"
           ? [
-              ["Reference", "Requirement", "Status", "Age in whole days"],
+              ["Reference", "Document", "Status", "Days waiting"],
               ...requirements.map((row) => [
                 row.reference,
                 row.title,
-                row.status,
+                label(row.status),
                 row.age_days,
               ]),
             ]
@@ -268,7 +269,7 @@ function ReportView({
                 "Reference",
                 "Follow-up",
                 "Due date",
-                "Assignee",
+                "Assigned to",
                 "Completed",
                 "Overdue",
               ],
@@ -305,7 +306,7 @@ function ReportView({
     <>
       <div className="report-toolbar">
         <p className="muted small">
-          Snapshot{" "}
+          As of{" "}
           {new Intl.DateTimeFormat("en-PH", {
             dateStyle: "medium",
             timeStyle: "short",
@@ -323,8 +324,10 @@ function ReportView({
         </p>
       )}
       <div className="metric-grid" aria-label="Analytics metrics">
-        <button onClick={() => choose("matters", "all", "All visible matters")}>
-          <span>Visible matters</span>
+        <button
+          onClick={() => choose("matters", "all", "All matters you can access")}
+        >
+          <span>Matters you can access</span>
           <strong>{m.visible_matters}</strong>
           <small>Includes closed matters</small>
         </button>
@@ -335,17 +338,18 @@ function ReportView({
         </button>
         <button
           onClick={() =>
-            choose("matters", "all", "Document completeness by matter")
+            choose("matters", "all", "Approved documents by matter")
           }
         >
-          <span>Required document completeness</span>
+          <span>Required documents approved</span>
           <strong>
             {m.completeness_percent === null
               ? "N/A"
               : m.completeness_percent.toFixed(1) + "%"}
           </strong>
           <small>
-            {m.accepted_documents} accepted of {m.required_documents} required
+            {m.accepted_documents} approved out of {m.required_documents}{" "}
+            required
           </small>
         </button>
         <button
@@ -357,21 +361,19 @@ function ReportView({
         </button>
         <button
           onClick={() =>
-            choose("requirements", "all", "Outstanding required documents")
+            choose("requirements", "all", "Documents still needing approval")
           }
         >
-          <span>Outstanding requirements</span>
+          <span>Documents still needing approval</span>
           <strong>{m.outstanding_requirements}</strong>
-          <small>Unaccepted required documents</small>
+          <small>Required documents not yet approved</small>
         </button>
         <button
-          onClick={() =>
-            choose("matters", "cohort", "Matters that reached readiness")
-          }
+          onClick={() => choose("matters", "cohort", "Matters marked ready")}
         >
-          <span>Median time to first readiness</span>
+          <span>Typical time to get documents ready</span>
           <strong>{formatDays(m.median_days_to_readiness)}</strong>
-          <small>{m.readiness_cohort} matters reached readiness</small>
+          <small>{m.readiness_cohort} matters have been marked ready</small>
         </button>
       </div>
       <div className="chart-grid">
@@ -407,8 +409,11 @@ function ReportView({
           ))}
         </section>
         <section className="panel chart-panel">
-          <h2>Outstanding requirement age</h2>
-          <p className="muted small">Whole days since the original request.</p>
+          <h2>How long documents have been waiting</h2>
+          <p className="muted small">
+            Days since each document was first requested. Received documents
+            stay here until approved.
+          </p>
           {ages.map((bucket) => (
             <button
               className="bar-row"
@@ -417,7 +422,7 @@ function ReportView({
                 choose(
                   "requirements",
                   bucket.key,
-                  bucket.name + " outstanding requirements",
+                  bucket.name + " documents waiting for approval",
                 )
               }
             >
@@ -438,9 +443,9 @@ function ReportView({
           ))}
         </section>
         <section className="panel chart-panel">
-          <h2>Open assignments</h2>
+          <h2>Active matters by staff member</h2>
           <p className="muted small">
-            Matter counts describe distribution, not productivity.
+            Shows who is handling each active matter.
           </p>
           {owners.map((owner) => (
             <button
@@ -477,7 +482,7 @@ function ReportView({
       <section className="panel drilldown">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">UNDERLYING RECORDS</p>
+            <p className="eyebrow">VIEW DETAILS</p>
             <h2>{selection.label}</h2>
           </div>
           <div className="document-actions">
@@ -485,16 +490,18 @@ function ReportView({
               aria-pressed={
                 selection.kind === "matters" && selection.filter === "all"
               }
-              onClick={() => choose("matters", "all", "All visible matters")}
+              onClick={() =>
+                choose("matters", "all", "All matters you can access")
+              }
             >
-              All visible matters
+              All matters you can access
             </button>
             <button
               aria-pressed={
                 selection.kind === "followups" && selection.filter === "all"
               }
               onClick={() =>
-                choose("followups", "all", "All visible follow-ups")
+                choose("followups", "all", "All follow-ups you can access")
               }
             >
               All follow-ups
@@ -511,7 +518,7 @@ function ReportView({
                   {selection.kind === "matters"
                     ? "Matter"
                     : selection.kind === "requirements"
-                      ? "Requirement"
+                      ? "Document"
                       : "Follow-up"}
                 </th>
                 <th>
@@ -519,9 +526,9 @@ function ReportView({
                 </th>
                 <th>
                   {selection.kind === "matters"
-                    ? "Required accepted"
+                    ? "Required approved"
                     : selection.kind === "requirements"
-                      ? "Age"
+                      ? "Days waiting"
                       : "State"}
                 </th>
               </tr>
@@ -542,7 +549,8 @@ function ReportView({
                       {row.title}
                       {selection.filter === "cohort" && (
                         <p className="muted small">
-                          {formatDays(row.days_to_readiness)} to first readiness
+                          {formatDays(row.days_to_readiness)} until documents
+                          were ready
                         </p>
                       )}
                     </td>
@@ -611,7 +619,7 @@ function ReportView({
                           ? "Completed"
                           : row.overdue
                             ? "Overdue"
-                            : "Outstanding"}
+                            : "To do"}
                       </span>
                     </td>
                   </tr>
@@ -667,32 +675,39 @@ function ReportView({
         )}
       </section>
       <details className="metric-definitions">
-        <summary>How these metrics are calculated</summary>
+        <summary>What do these numbers mean?</summary>
         <ul>
           <li>
-            Scope follows your role and selected category. Staff task metrics
-            include their own assigned follow-ups.
+            The report only includes matters you can access and the type of
+            service you selected. Staff sees follow-ups assigned to them.
           </li>
           <li>
-            Completeness includes required documents across all visible matters,
-            including closed matters. An empty denominator displays N/A.
+            Required documents approved is the percentage of required checklist
+            items a reviewer has approved. Receiving a document does not approve
+            it. Closed matters are included; if there are no required documents,
+            the report shows N/A.
           </li>
           <li>
-            Outstanding requirements exclude accepted documents and closed
-            matters. Age uses elapsed 24-hour periods from the original request,
-            including corrections awaiting resolution.
+            Documents still needing approval includes missing documents,
+            received documents waiting for review, and documents that need
+            changes. Closed matters are excluded.
           </li>
           <li>
-            Overdue means an unfinished follow-up on a nonclosed matter with a
-            due date before {report.local_date}, using the Philippines calendar.
-            Tasks due today are not overdue.
+            Days waiting starts when a document was first requested. Sending a
+            corrected copy does not restart the count. This is a waiting time,
+            not a legal deadline.
           </li>
           <li>
-            Median readiness time includes only matters with a recorded first
-            readiness, including closed matters. Unfinished matters are excluded
-            from that metric and remain visible in the aging report. Readiness
-            durations are displayed rounded to the nearest whole day;
-            calculations and CSV exports retain their original precision.
+            Overdue follow-ups are unfinished tasks on open matters due before{" "}
+            {report.local_date}, using the Philippines calendar. Tasks due today
+            are not overdue.
+          </li>
+          <li>
+            Typical time uses the median: the middle preparation time, or the
+            average of the two middle times. It runs from opening a matter to
+            the first time a reviewer marks it ready. Only matters that reached
+            that step are included, even if later closed. Days are rounded for
+            display; CSV exports keep the precise values.
           </li>
         </ul>
       </details>

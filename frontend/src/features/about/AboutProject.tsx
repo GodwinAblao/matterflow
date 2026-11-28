@@ -77,11 +77,10 @@ export function AboutProject() {
         <section>
           <h3>Business Analytics contribution</h3>
           <p>
-            Descriptive reporting covers required-document completeness,
-            unresolved requirement age, overdue follow-ups, time to first
-            readiness, and workload distribution. Each metric has a defined
-            scope and opens the underlying records; selected tables can be
-            exported to CSV.
+            Reports show approved documents, documents still waiting for
+            approval, overdue follow-ups, typical preparation time, and staff
+            assignments. Select a number or chart to see its records and
+            download them as CSV.
           </p>
           <p>
             Readiness time measures document preparation. These figures do not

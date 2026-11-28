@@ -48,3 +48,21 @@ The register separates required-document receipt from reviewer acceptance. Recei
 Readiness durations in the dashboard and readiness drill-down are rounded to the nearest whole day (for example, 5 days; 2.5 days displays as 3 days). API calculations and CSV values retain their original precision, and empty cohorts remain N/A.
 
 The underlying records panel has All visible matters and All follow-ups controls. Each metric/chart selection and record-view change starts at page one. Tables support 5, 10 or 20 rows per page; refreshed reports clamp the page to the available rows. CSV exports every matching record in the current selection and category, including records on other pages.
+
+## Plain-language labels
+
+The app uses plain wording while keeping the same calculations and API field names.
+
+| Calculation or internal term   | App label                            |
+| ------------------------------ | ------------------------------------ |
+| Visible matters                | Matters you can access               |
+| Required document completeness | Required documents approved          |
+| Outstanding requirements       | Documents still needing approval     |
+| Outstanding requirement age    | How long documents have been waiting |
+| Median time to first readiness | Typical time to get documents ready  |
+| Underlying records             | View details                         |
+| Accepted document              | Approved                             |
+| Missing document               | Not received                         |
+| Needs correction               | Needs changes                        |
+
+Received means a copy has arrived; Approved means a reviewer has checked and approved it. Waiting time starts at the original request and is not a legal deadline. The optional What do these numbers mean? explanation defines the median and the report scope. CSV headings and status values use the same plain labels; numeric precision and filtering are unchanged.

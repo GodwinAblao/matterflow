@@ -1,3 +1,4 @@
+import { displayLabel as label } from "../../lib/displayLabel";
 import { MatterManagement } from "../matters/MatterManagement";
 import { NewRequirementForm } from "./NewRequirementForm";
 import { useEffect, useState } from "react";
@@ -61,7 +62,7 @@ type Props = {
   onChanged: () => void;
   onDeleted?: () => void;
 };
-const label = (value: string) => value.replaceAll("_", " ");
+
 const timestamp = (value: string) =>
   new Intl.DateTimeFormat("en-PH", {
     dateStyle: "medium",
@@ -74,7 +75,7 @@ const events: Record<string, string> = {
   "matter.archived": "Matter archived",
   "document.received": "Document received",
   "document.resubmitted": "Corrected document received",
-  "document.accepted": "Document accepted",
+  "document.accepted": "Document approved",
   "document.correction_requested": "Correction requested",
   "matter.ready": "Marked ready",
   "requirement.added": "Checklist requirement added",
@@ -236,9 +237,12 @@ export function MatterDetails({
           Saving change...
         </p>
       )}
-      <section className="readiness-panel" aria-label="Document readiness">
+      <section
+        className="readiness-panel"
+        aria-label="Are the documents ready?"
+      >
         <div className="readiness-heading">
-          <h3>Document readiness</h3>
+          <h3>Are the documents ready?</h3>
           <button
             className="text-button"
             disabled={busy}
@@ -256,17 +260,18 @@ export function MatterDetails({
           </p>
         ) : detail.matter.status === "ready" ? (
           <p className="readiness-complete">
-            Ready for the next step. All required documents have been accepted.
+            Ready for the next step. All required documents have been approved.
           </p>
         ) : detail.readiness.documents_complete ? (
           <p className="readiness-complete">
-            All required documents are accepted. A reviewer can confirm
-            readiness.
+            All required documents are approved. A reviewer can mark this matter
+            ready.
           </p>
         ) : (
           <>
             <p className="small muted">
-              Resolve these requirements before confirming readiness:
+              These documents still need approval before the matter can be
+              marked ready:
             </p>
             <ul className="blockers">
               {detail.readiness.blockers.map((blocker) => (
@@ -295,7 +300,7 @@ export function MatterDetails({
         )}
         {role === "staff" && !locked && (
           <p className="small muted">
-            A reviewer confirms readiness after accepting every required
+            A reviewer can mark this matter ready after approving every required
             document.
           </p>
         )}
@@ -350,8 +355,8 @@ export function MatterDetails({
                     }
                   >
                     {document.status === "needs_correction"
-                      ? "Record corrected receipt"
-                      : "Record receipt"}
+                      ? "Record corrected document"
+                      : "Record document received"}
                   </button>
                 </div>
               )}
@@ -371,11 +376,11 @@ export function MatterDetails({
                             outcome: "accepted",
                             note: null,
                           },
-                          "Document accepted.",
+                          "Document approved.",
                         )
                       }
                     >
-                      Accept document
+                      Approve document
                     </button>
                     <button
                       disabled={busy}
@@ -384,7 +389,7 @@ export function MatterDetails({
                         setNote("");
                       }}
                     >
-                      Request correction
+                      Request changes
                     </button>
                   </div>
                   {correction === document.id && (

@@ -147,7 +147,7 @@ test("metric drill-downs reconcile with active scope, median cohort and overdue 
   await click("Active matters");
   expect(rows()).toHaveLength(2);
   expect(table()).not.toContain("Closed fixture");
-  await click("Median time");
+  await click("Typical time");
   expect(rows()).toHaveLength(2);
   expect(table()).not.toContain("=1+1");
   expect(table()).toContain("Closed fixture");
@@ -161,7 +161,7 @@ test("metric drill-downs reconcile with active scope, median cohort and overdue 
 
 test("stage, age and assignment charts filter records and open the correct matter", async () => {
   await render();
-  await click("ready");
+  await click("Ready");
   expect(rows()).toHaveLength(1);
   expect(table()).toContain("Ready fixture");
   await click("0-7 days");
@@ -211,7 +211,7 @@ test("category changes reset drill-downs and display empty-denominator N/A value
     expect.any(AbortSignal),
     "test-token",
   );
-  expect(container.textContent).toContain("All visible matters");
+  expect(container.textContent).toContain("All matters you can access");
   expect(container.querySelectorAll(".metric-grid strong")[2].textContent).toBe(
     "N/A",
   );
@@ -281,8 +281,8 @@ test("readiness durations display whole days with singular units where appropria
   await render();
   expect(container.textContent).toContain("5 days");
   expect(container.textContent).not.toContain("5.0 days");
-  await click("Median time");
-  expect(table()).toContain("1 day to first readiness");
+  await click("Typical time");
+  expect(table()).toContain("1 day until documents were ready");
   expect(table()).not.toContain("1.00 days");
 });
 
@@ -331,13 +331,13 @@ test("underlying views paginate and can return from follow-ups to all matters", 
   expect(container.textContent).toContain("Page 1 of 2");
   await click("Next");
   expect(rows()).toHaveLength(2);
-  await click("All visible matters");
+  await click("All matters you can access");
   expect(rows()).toHaveLength(5);
   expect(table()).toContain("Paged matter 1");
   expect(container.querySelector(".drilldown h2")?.textContent).toBe(
-    "All visible matters",
+    "All matters you can access",
   );
-  await click("Outstanding requirements");
+  await click("Documents still needing approval");
   expect(rows()).toHaveLength(5);
   await click("Next");
   expect(rows()).toHaveLength(4);

@@ -111,8 +111,7 @@ export function FollowUpPanel({ rows, closed, busy, onChange }: Props) {
           <li key={row.id}>
             <strong>{row.title}</strong>
             <p className="muted small">
-              Due {row.due_on} -{" "}
-              {row.completed_at ? "Completed" : "Outstanding"}
+              Due {row.due_on} - {row.completed_at ? "Completed" : "To do"}
               <br />
               {row.assigned_name ?? "Unassigned"}
             </p>

@@ -226,7 +226,7 @@ test("opens the correct page for a preserved selection after a role switch", asy
 
 test("shows receipt separately from reviewer acceptance", async () => {
   await render("staff");
-  expect(container.textContent).toContain("Required documents accepted");
+  expect(container.textContent).toContain("Required documents approved");
   expect(container.querySelector(".receipt-count")?.textContent).toBe(
     "Received: 1 / 2",
   );
