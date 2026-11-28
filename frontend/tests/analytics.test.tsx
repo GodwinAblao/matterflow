@@ -285,3 +285,112 @@ test("readiness durations display whole days with singular units where appropria
   expect(table()).toContain("1 day to first readiness");
   expect(table()).not.toContain("1.00 days");
 });
+
+function pagedReport() {
+  return {
+    ...structuredClone(report),
+    matters: Array.from({ length: 13 }, (_, i) => ({
+      ...report.matters[0],
+      id: `matter-${i}`,
+      reference: `MF-${String(i + 1).padStart(3, "0")}`,
+      title: `Paged matter ${i + 1}`,
+    })),
+    requirements: Array.from({ length: 9 }, (_, i) => ({
+      ...report.requirements[0],
+      id: `requirement-${i}`,
+      title: `Paged requirement ${i + 1}`,
+    })),
+    follow_ups: Array.from({ length: 7 }, (_, i) => ({
+      ...report.follow_ups[0],
+      id: `follow-${i}`,
+      title: `Paged follow-up ${i + 1}`,
+    })),
+  };
+}
+test("underlying views paginate and can return from follow-ups to all matters", async () => {
+  vi.mocked(apiGet).mockResolvedValue(pagedReport());
+  await render();
+  expect(rows()).toHaveLength(5);
+  expect(container.textContent).toContain("Showing 1–5 of 13 records");
+  expect(
+    container.querySelector<HTMLButtonElement>(
+      '[aria-label="Previous analytics page"]',
+    )?.disabled,
+  ).toBe(true);
+  await click("Next");
+  await click("Next");
+  expect(rows()).toHaveLength(3);
+  expect(table()).toContain("Paged matter 13");
+  expect(
+    container.querySelector<HTMLButtonElement>(
+      '[aria-label="Next analytics page"]',
+    )?.disabled,
+  ).toBe(true);
+  await click("All follow-ups");
+  expect(rows()).toHaveLength(5);
+  expect(container.textContent).toContain("Page 1 of 2");
+  await click("Next");
+  expect(rows()).toHaveLength(2);
+  await click("All visible matters");
+  expect(rows()).toHaveLength(5);
+  expect(table()).toContain("Paged matter 1");
+  expect(container.querySelector(".drilldown h2")?.textContent).toBe(
+    "All visible matters",
+  );
+  await click("Outstanding requirements");
+  expect(rows()).toHaveLength(5);
+  await click("Next");
+  expect(rows()).toHaveLength(4);
+  await act(async () => {
+    const select = container.querySelector<HTMLSelectElement>(
+      '[aria-label="Analytics rows per page"]',
+    )!;
+    select.value = "10";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  expect(rows()).toHaveLength(9);
+  expect(container.textContent).toContain("Page 1 of 1");
+});
+
+test("pagination clamps to available rows when a report refresh shrinks the selection", async () => {
+  vi.mocked(apiGet).mockResolvedValue(pagedReport());
+  await render();
+  await click("Next");
+  await click("Next");
+  vi.mocked(apiGet).mockResolvedValue(report);
+  await click("Refresh report");
+  expect(rows()).toHaveLength(3);
+  expect(container.textContent).toContain("Page 1 of 1");
+  expect(container.textContent).toContain("Showing 1–3 of 3 records");
+});
+
+test("CSV includes all matching rows across pages", async () => {
+  let exported: Blob | undefined;
+  const originalCreate = URL.createObjectURL;
+  const originalRevoke = URL.revokeObjectURL;
+  URL.createObjectURL = vi.fn((blob: Blob | MediaSource) => {
+    exported = blob as Blob;
+    return "blob:pages";
+  });
+  URL.revokeObjectURL = vi.fn();
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+  try {
+    vi.mocked(apiGet).mockResolvedValue(pagedReport());
+    await render();
+    await click("Next");
+    expect(rows()).toHaveLength(5);
+    await click("Export CSV");
+    const text = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(exported!);
+    });
+    expect(text.split("\r\n")).toHaveLength(14);
+    expect(text).toContain("Paged matter 1");
+    expect(text).toContain("Paged matter 13");
+  } finally {
+    URL.createObjectURL = originalCreate;
+    URL.revokeObjectURL = originalRevoke;
+  }
+});

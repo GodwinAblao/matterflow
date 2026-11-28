@@ -46,3 +46,5 @@ Run npm.cmd run test:analytics against the migrated and seeded development datab
 The register separates required-document receipt from reviewer acceptance. Received counts required checklist items with a recorded received_at timestamp, including accepted items and items needing correction. It counts each requirement once, not each resubmission. The accepted progress bar and completeness metric count only accepted required items. Completing a follow-up changes neither count.
 
 Readiness durations in the dashboard and readiness drill-down are rounded to the nearest whole day (for example, 5 days; 2.5 days displays as 3 days). API calculations and CSV values retain their original precision, and empty cohorts remain N/A.
+
+The underlying records panel has All visible matters and All follow-ups controls. Each metric/chart selection and record-view change starts at page one. Tables support 5, 10 or 20 rows per page; refreshed reports clamp the page to the available rows. CSV exports every matching record in the current selection and category, including records on other pages.

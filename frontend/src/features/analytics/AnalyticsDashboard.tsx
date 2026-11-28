@@ -107,6 +107,8 @@ function ReportView({
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pageSize, setPageSize] = useState(5);
+  const [requestedPage, setRequestedPage] = useState(1);
   const [selection, setSelection] = useState<Selection>({
     kind: "matters",
     filter: "all",
@@ -215,8 +217,19 @@ function ReportView({
   const followups = report.follow_ups.filter((row) =>
     selection.filter === "overdue" ? row.overdue : true,
   );
-  const choose = (kind: Selection["kind"], filter: string, title: string) =>
+  const totalRows =
+    selection.kind === "matters"
+      ? matters.length
+      : selection.kind === "requirements"
+        ? requirements.length
+        : followups.length;
+  const pageCount = Math.max(1, Math.ceil(totalRows / pageSize));
+  const page = Math.min(requestedPage, pageCount);
+  const pageStart = (page - 1) * pageSize;
+  const choose = (kind: Selection["kind"], filter: string, title: string) => {
     setSelection({ kind, filter, label: title });
+    setRequestedPage(1);
+  };
   function exportCsv() {
     const rows =
       selection.kind === "matters"
@@ -469,6 +482,17 @@ function ReportView({
           </div>
           <div className="document-actions">
             <button
+              aria-pressed={
+                selection.kind === "matters" && selection.filter === "all"
+              }
+              onClick={() => choose("matters", "all", "All visible matters")}
+            >
+              All visible matters
+            </button>
+            <button
+              aria-pressed={
+                selection.kind === "followups" && selection.filter === "all"
+              }
               onClick={() =>
                 choose("followups", "all", "All visible follow-ups")
               }
@@ -504,7 +528,7 @@ function ReportView({
             </thead>
             <tbody>
               {selection.kind === "matters" &&
-                matters.map((row) => (
+                matters.slice(pageStart, pageStart + pageSize).map((row) => (
                   <tr key={row.id}>
                     <td>
                       <button
@@ -533,27 +557,29 @@ function ReportView({
                   </tr>
                 ))}
               {selection.kind === "requirements" &&
-                requirements.map((row) => (
-                  <tr key={row.id}>
-                    <td>
-                      <button
-                        className="text-button"
-                        onClick={() => onOpenMatter(row.matter_id)}
-                      >
-                        {row.reference}
-                      </button>
-                    </td>
-                    <td>{row.title}</td>
-                    <td>
-                      <span className={"stage " + row.status}>
-                        {label(row.status)}
-                      </span>
-                    </td>
-                    <td>{row.age_days} days</td>
-                  </tr>
-                ))}
+                requirements
+                  .slice(pageStart, pageStart + pageSize)
+                  .map((row) => (
+                    <tr key={row.id}>
+                      <td>
+                        <button
+                          className="text-button"
+                          onClick={() => onOpenMatter(row.matter_id)}
+                        >
+                          {row.reference}
+                        </button>
+                      </td>
+                      <td>{row.title}</td>
+                      <td>
+                        <span className={"stage " + row.status}>
+                          {label(row.status)}
+                        </span>
+                      </td>
+                      <td>{row.age_days} days</td>
+                    </tr>
+                  ))}
               {selection.kind === "followups" &&
-                followups.map((row) => (
+                followups.slice(pageStart, pageStart + pageSize).map((row) => (
                   <tr key={row.id}>
                     <td>
                       <button
@@ -593,11 +619,50 @@ function ReportView({
             </tbody>
           </table>
         </div>
-        {(selection.kind === "matters"
-          ? matters.length
-          : selection.kind === "requirements"
-            ? requirements.length
-            : followups.length) === 0 && (
+        <div className="register-pagination">
+          <p className="muted small" role="status" aria-live="polite">
+            Showing {totalRows ? pageStart + 1 : 0}
+            {"\u2013"}
+            {Math.min(pageStart + pageSize, totalRows)} of {totalRows} records
+          </p>
+          <label className="page-size">
+            Rows per page
+            <select
+              aria-label="Analytics rows per page"
+              value={pageSize}
+              onChange={(event) => {
+                setPageSize(Number(event.target.value));
+                setRequestedPage(1);
+              }}
+            >
+              {[5, 10, 20].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+          <nav aria-label="Analytics record pages">
+            <button
+              aria-label="Previous analytics page"
+              disabled={page === 1}
+              onClick={() => setRequestedPage(page - 1)}
+            >
+              Previous
+            </button>
+            <span>
+              Page {page} of {pageCount}
+            </span>
+            <button
+              aria-label="Next analytics page"
+              disabled={page === pageCount}
+              onClick={() => setRequestedPage(page + 1)}
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+        {totalRows === 0 && (
           <p className="empty">No records match this selection.</p>
         )}
       </section>
